@@ -106,6 +106,12 @@
   .big-btn { background: var(--blue); color: #000; border: none; padding: 11px 18px; border-radius: 20px; font-size: 13px; font-weight: 800; cursor: pointer; }
   .big-btn.sec { background: #2c2c2c; color: #fff; }
 
+  /* Индикатор первичной загрузки */
+  .loading-banner {
+    text-align: center; padding: 36px 16px; color: var(--muted); font-size: 14px;
+    background: var(--sec); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 14px; display: none;
+  }
+
   /* Сетка карточек */
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px 12px; }
   .card { display: flex; flex-direction: column; gap: 8px; cursor: pointer; background: var(--sec); border-radius: 12px; padding-bottom: 10px; overflow: hidden; border: 1px solid #222; }
@@ -235,7 +241,6 @@
   }
   @media (max-width: 700px) {
     .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px 10px; }
-    /* На телефоне мини-плеер совсем маленький (150px в углу), чтобы не закрывать экран */
     .watch-view.mini {
       width: 150px !important;
       bottom: 60px !important;
@@ -257,9 +262,9 @@
     <input type="text" id="searchInput" placeholder="Поиск видео..." oninput="onSearch()">
   </div>
   <div class="h-right">
-    <span class="sync-badge" id="syncBadge">⏳ Обновление...</span>
+    <span class="sync-badge" id="syncBadge">⏳ Загрузка...</span>
     <button class="pill-btn blue" id="randomBtn" onclick="playRandom()" title="Случайное видео">🎲</button>
-    <button class="pill-btn" onclick="syncFromGoogleDrive(true)" title="Проверить новые видео">🔄</button>
+    <button class="pill-btn" onclick="syncFromGoogleDrive(true)" title="Обновить список с Google Диска">🔄</button>
     <button class="pill-btn" onclick="openAccountModal()" title="Сменить аккаунт">👤 <span id="curAccLabel">Влад</span></button>
   </div>
 </header>
@@ -269,7 +274,7 @@
   <div class="modal-card">
     <h3>👤 Выбор аккаунта</h3>
     <p style="font-size:12px; color:var(--muted); line-height:1.4;">
-      У каждого аккаунта своя история просмотра, прогресс и свой список удалённых видео.
+      У каждого аккаунта своя история просмотра, прогресс и свой список скрытых видео.
     </p>
     <div class="acc-list" id="accList"></div>
     <div style="display:flex; gap:8px;">
@@ -307,6 +312,11 @@
           </select>
         </div>
       </div>
+
+      <div id="loadingBanner" class="loading-banner">
+        ⏳ Подключаюсь к Google Диску и загружаю каналы...
+      </div>
+
       <div class="grid" id="videoGrid"></div>
       <div id="loadMoreWrap" style="text-align:center; padding:24px 0; display:none;">
         <button class="big-btn sec" onclick="loadMoreCards()">Показать ещё видео</button>
@@ -416,7 +426,6 @@ let durationMap = safeGet('localtube_durations_v1', {});
 
 function loadAccountData() {
   document.getElementById('curAccLabel').textContent = currentAccount;
-  // Для первого профиля сохраняем совместимость со старой историей
   const progKey = currentAccount === 'Влад' ? 'localtube_progress_v1' : 'bubatube_prog_' + currentAccount;
   const delKey = currentAccount === 'Влад' ? 'localtube_deleted_v1' : 'bubatube_del_' + currentAccount;
   progressMap = safeGet(progKey, {});
@@ -481,8 +490,8 @@ function restoreDeletedForAccount() {
 // =========================================================
 // ДАННЫЕ КАТАЛОГА И МГНОВЕННЫЙ КЭШ
 // =========================================================
-let rawCatalogVideos = []; // Полный список видео с диска (без фильтра удаленных)
-let allVideos = [], channels = {}, channelAvatars = safeGet('bubatube_avatars_v2', {});
+let rawCatalogVideos = [];
+let allVideos = [], channels = {}, channelAvatars = safeGet('bubatube_avatars_v3', {});
 let activeChannel = 'ALL', activeTab = 'home';
 let currentVideo = null, currentChapters = [];
 let filteredList = [], renderedCount = 0;
@@ -507,7 +516,7 @@ function closeSidebar() {
 }
 
 // =========================================================
-// БЫСТРАЯ ПАРАЛЛЕЛЬНАЯ СИНХРОНИЗАЦИЯ С GOOGLE ДИСКОМ
+// СТАБИЛЬНАЯ И БЫСТРАЯ СИНХРОНИЗАЦИЯ С GOOGLE ДИСКОМ
 // =========================================================
 async function fetchDriveItems(query, apiKey) {
   let all = [], pageToken = '';
@@ -525,14 +534,23 @@ async function fetchDriveItems(query, apiKey) {
 
 async function syncFromGoogleDrive(forceVisual) {
   const badge = document.getElementById('syncBadge');
+  const banner = document.getElementById('loadingBanner');
   badge.style.display = 'inline-block';
   badge.textContent = '⏳ Обновление...';
+
+  if (rawCatalogVideos.length === 0) {
+    banner.style.display = 'block';
+    banner.textContent = '⏳ Подключаюсь к папке VIDEO на Google Диске...';
+  }
 
   try {
     const apiKey = DEFAULT_API_KEY;
     const rootItems = await fetchDriveItems(`'${DEFAULT_FOLDER_ID}' in parents and trashed = false`, apiKey);
     if (rootItems.length === 0) {
       badge.style.display = 'none';
+      if (rawCatalogVideos.length === 0) {
+        banner.textContent = '⚠️ Папка VIDEO пуста или не открыт доступ «Все, у кого есть ссылка».';
+      }
       return;
     }
 
@@ -547,51 +565,63 @@ async function syncFromGoogleDrive(forceVisual) {
     });
 
     const folderIds = Object.keys(subFolders);
-    const chunkSize = 25;
+    const chunkSize = 15;
     const chunks = [];
     for (let i = 0; i < folderIds.length; i += chunkSize) {
       chunks.push(folderIds.slice(i, i + chunkSize));
     }
 
-    // Запрашиваем только видео и картинки (без тяжелых .info.json и .description при старте)
-    // И сканируем в 5 параллельных потоков!
-    let completedChunks = 0;
-    const concurrency = 5;
+    let scannedFolders = 0;
+    const concurrency = 4; // 4 параллельных потока с проверенным синтаксисом запроса
     for (let i = 0; i < chunks.length; i += concurrency) {
       const batch = chunks.slice(i, i + concurrency);
       const promises = batch.map(async (chunk) => {
-        const pQuery = `(${chunk.map(id => `'${id}' in parents`).join(' or ')}) and (mimeType contains 'video/' or mimeType contains 'image/') and trashed = false`;
+        const q = `(${chunk.map(id => `'${id}' in parents`).join(' or ')}) and trashed = false`;
         try {
-          return await fetchDriveItems(pQuery, apiKey);
-        } catch (e) {
-          return [];
+          return await fetchDriveItems(q, apiKey);
+        } catch (subErr) {
+          let fallbackItems = [];
+          for (const singleId of chunk) {
+            try {
+              const sItems = await fetchDriveItems(`'${singleId}' in parents and trashed = false`, apiKey);
+              fallbackItems = fallbackItems.concat(sItems);
+            } catch (e) {}
+          }
+          return fallbackItems;
         } finally {
-          completedChunks++;
-          const doneFolders = Math.min(completedChunks * chunkSize, folderIds.length);
-          badge.textContent = `⏳ ${doneFolders}/${folderIds.length}`;
+          scannedFolders = Math.min(scannedFolders + chunk.length, folderIds.length);
+          badge.textContent = `⏳ ${scannedFolders}/${folderIds.length}`;
+          if (rawCatalogVideos.length === 0) {
+            banner.textContent = `⏳ Загружаю каналы с Google Диска (${scannedFolders} из ${folderIds.length})...`;
+          }
         }
       });
 
       const results = await Promise.all(promises);
       results.forEach(items => { allFiles = allFiles.concat(items); });
 
-      // Если кэша еще не было (первый запуск) — отрисовываем первые видео сразу, не дожидаясь конца
-      if (rawCatalogVideos.length === 0 && allFiles.length > 0) {
+      // Показываем первые найденные видео сразу же на экране, не дожидаясь окончания всех 160 папок
+      if (allFiles.length > 0 && (rawCatalogVideos.length === 0 || forceVisual)) {
         parseDriveFilesToCatalog(allFiles, subFolders, apiKey, false);
       }
     }
 
     parseDriveFilesToCatalog(allFiles, subFolders, apiKey, true);
+    banner.style.display = 'none';
     badge.textContent = '✓ Обновлено';
     setTimeout(() => { badge.style.display = 'none'; }, 2000);
   } catch (err) {
-    badge.textContent = '⚠️ Офлайн-кэш';
-    setTimeout(() => { badge.style.display = 'none'; }, 3000);
+    badge.textContent = '⚠️ Ошибка сети';
+    if (rawCatalogVideos.length === 0) {
+      banner.style.display = 'block';
+      banner.textContent = '❌ Ошибка загрузки с Google Диска: ' + err.message;
+    }
+    setTimeout(() => { badge.style.display = 'none'; }, 4000);
   }
 }
 
 function parseDriveFilesToCatalog(files, folderMap, apiKey, saveCache) {
-  const thumbMap = {}, fallbackThumbs = {};
+  const thumbMap = {}, infoMap = {}, fallbackThumbs = {};
   const newAvatars = {};
 
   files.forEach(f => {
@@ -599,9 +629,15 @@ function parseDriveFilesToCatalog(files, folderMap, apiKey, saveCache) {
     if (lower.includes('[shorts]')) return;
     const pId = (f.parents && f.parents[0]) || '';
     const ch = folderMap[pId] || 'Видео';
+    if (ch.toLowerCase() === 'shorts_cache') return;
+    const relKey = `${ch}/${name.replace(/\.[^/.]+$/, "")}`;
+
+    if (lower.endsWith('.info.json')) {
+      infoMap[`${ch}/${name.slice(0, -10)}`] = `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${apiKey}`;
+      return;
+    }
     const ext = lower.split('.').pop();
     if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
-      const relKey = `${ch}/${name.replace(/\.[^/.]+$/, "")}`;
       const imgUrl = `https://drive.google.com/thumbnail?id=${f.id}&sz=w640`;
       thumbMap[relKey] = imgUrl;
       if (lower.includes('avatar') || lower.includes('channel') || lower.startsWith('na - ')) newAvatars[ch] = imgUrl;
@@ -616,6 +652,7 @@ function parseDriveFilesToCatalog(files, folderMap, apiKey, saveCache) {
     if (lower.includes('[shorts]')) return;
     const pId = (f.parents && f.parents[0]) || '';
     const ch = folderMap[pId] || 'Видео';
+    if (ch.toLowerCase() === 'shorts_cache') return;
     const pKey = `${ch}/${name}`;
     const raw = name.replace(/\.[^/.]+$/, "");
 
@@ -626,12 +663,11 @@ function parseDriveFilesToCatalog(files, folderMap, apiKey, saveCache) {
     parsedVideos.push({
       id: f.id,
       driveId: f.id,
-      folderId: pId,
-      rawBaseName: raw,
       progressKey: pKey,
       fileName: name,
       streamUrl: `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${apiKey}`,
       thumbUrl: thumbMap[`${ch}/${raw}`] || `https://drive.google.com/thumbnail?id=${f.id}&sz=w640`,
+      infoUrl: infoMap[`${ch}/${raw}`] || null,
       title: title,
       channel: ch,
       dateFormatted: dateStr,
@@ -644,15 +680,17 @@ function parseDriveFilesToCatalog(files, folderMap, apiKey, saveCache) {
     if (!newAvatars[ch] && fallbackThumbs[ch]) newAvatars[ch] = fallbackThumbs[ch];
   });
 
-  rawCatalogVideos = parsedVideos;
-  channelAvatars = Object.assign({}, channelAvatars, newAvatars);
+  if (parsedVideos.length > 0) {
+    rawCatalogVideos = parsedVideos;
+    channelAvatars = Object.assign({}, channelAvatars, newAvatars);
+    document.getElementById('loadingBanner').style.display = 'none';
 
-  if (saveCache && parsedVideos.length > 0) {
-    safeSet('bubatube_catalog_v2', rawCatalogVideos);
-    safeSet('bubatube_avatars_v2', channelAvatars);
+    if (saveCache) {
+      safeSet('bubatube_catalog_v3', rawCatalogVideos);
+      safeSet('bubatube_avatars_v3', channelAvatars);
+    }
+    rebuildVisibleLibrary();
   }
-
-  rebuildVisibleLibrary();
 }
 
 function rebuildVisibleLibrary() {
@@ -832,8 +870,6 @@ function setupMediaSession(v) {
   } catch (e) {}
 }
 
-// Когда телефон блокируется или браузер сворачивается — мобильная ОС пытается поставить video на паузу.
-// Если паузу нажал не пользователь, мгновенно продолжаем воспроизведение.
 document.addEventListener('visibilitychange', () => {
   lastVisibilityChange = Date.now();
   const p = document.getElementById('mainPlayer');
@@ -848,9 +884,9 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // =========================================================
-// ПЛЕЕР И УМНАЯ ДОЗАГРУЗКА ОПИСАНИЯ / КОММЕНТАРИЕВ ПО ЗАПРОСУ
+// ПЛЕЕР И ПОДГРУЗКА ОПИСАНИЯ / КОММЕНТАРИЕВ ПО ЗАПРОСУ
 // =========================================================
-const infoCacheMap = {}; // Кэш загруженных .info.json
+const infoCacheMap = {};
 
 async function playVideo(v) {
   closeSidebar();
@@ -881,7 +917,6 @@ async function playVideo(v) {
   };
 
   player.onpause = () => {
-    // Если браузер сам поставил на паузу в момент сворачивания или блокировки экрана — возвращаем Play
     if ((document.hidden || Date.now() - lastVisibilityChange < 1500) && !player.ended && !userPaused) {
       player.play().catch(() => {});
       return;
@@ -943,7 +978,6 @@ async function playVideo(v) {
   renderUpNext();
   document.getElementById('mainArea').scrollTop = 0;
 
-  // Подгружаем описание и комментарии в фоне по запросу
   loadInfoAndChaptersLazy(v);
 }
 
@@ -984,7 +1018,7 @@ function minimizeToHome() {
   const wv = document.getElementById('watchView');
   const p = document.getElementById('mainPlayer');
   if (currentVideo) {
-    p.controls = false; // Убираем громоздкие ползунки в миниатюре
+    p.controls = false;
     wv.classList.add('active', 'mini');
   } else {
     wv.classList.remove('active', 'mini');
@@ -1025,7 +1059,6 @@ function toggleMainPlay() {
   }
 }
 
-// Ленивая подгрузка .info.json только для открытого видео
 async function loadInfoAndChaptersLazy(v) {
   const epBox = document.getElementById('episodesBox'), epBtn = document.getElementById('btnEpisodes'), descBox = document.getElementById('descBox');
   const commBox = document.getElementById('commentsBox'), commList = document.getElementById('commentsList'), commTitle = document.getElementById('commentsTitle');
@@ -1033,21 +1066,15 @@ async function loadInfoAndChaptersLazy(v) {
   commBox.style.display = 'none'; commList.innerHTML = '';
   currentChapters = [];
 
-  descBox.textContent = `Канал: ${v.channel} • Дата: ${v.dateFormatted}`;
+  descBox.textContent = `Канал: ${v.channel} • Дата: ${v.dateFormatted}\nФайл: ${v.fileName}`;
 
   try {
     let info = infoCacheMap[v.id];
-    if (!info && v.folderId && v.rawBaseName) {
-      const safeName = v.rawBaseName.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '.info.json';
-      const q = `'${v.folderId}' in parents and name = '${safeName}' and trashed = false`;
-      const files = await fetchDriveItems(q, DEFAULT_API_KEY);
-      if (files && files.length > 0) {
-        const infoUrl = `https://www.googleapis.com/drive/v3/files/${files[0].id}?alt=media&key=${DEFAULT_API_KEY}`;
-        const r = await fetch(infoUrl);
-        if (r.ok) {
-          info = await r.json();
-          infoCacheMap[v.id] = info;
-        }
+    if (!info && v.infoUrl) {
+      const r = await fetch(v.infoUrl);
+      if (r.ok) {
+        info = await r.json();
+        infoCacheMap[v.id] = info;
       }
     }
 
@@ -1133,8 +1160,7 @@ function toggleCurrentWatched() {
   updateWatchedBtn();
 }
 function deleteVideo(v) {
-  if (!confirm(`Скрыть «${v.title}» для аккаунта «${currentAccount}»?
-(На других аккаунтах и на Google Диске видео останется)`)) return;
+  if (!confirm(`Скрыть «${v.title}» для аккаунта «${currentAccount}»?\n(На других аккаунтах и на Google Диске видео останется)`)) return;
   deletedMap[v.progressKey] = true;
   deletedMap[v.fileName] = true;
   saveAccountDeleted();
@@ -1166,13 +1192,11 @@ window.addEventListener('keydown', e => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-  // 1. Мгновенно загружаем каталог из локального кэша (0.05 сек)
-  const cachedCatalog = safeGet('bubatube_catalog_v2', null);
+  const cachedCatalog = safeGet('bubatube_catalog_v3', null);
   if (cachedCatalog && Array.isArray(cachedCatalog) && cachedCatalog.length > 0) {
     rawCatalogVideos = cachedCatalog;
     rebuildVisibleLibrary();
   }
-  // 2. В фоне тихо проверяем обновления с Google Диска
   syncFromGoogleDrive(false);
 });
 </script>
