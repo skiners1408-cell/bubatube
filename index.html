@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="ru"><head>
+<html lang="ru">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
@@ -28,26 +29,26 @@
 
   /* Шапка */
   header {
-    height: 56px; background: var(--bg); border-bottom: 1px solid var(--border);
+    height: 54px; background: var(--bg); border-bottom: 1px solid var(--border);
     display: flex; align-items: center; justify-content: space-between;
-    padding: 0 12px; flex-shrink: 0; gap: 8px; z-index: 50;
+    padding: 0 10px; flex-shrink: 0; gap: 8px; z-index: 50;
   }
   .h-left, .h-right { display: flex; align-items: center; gap: 6px; }
   .icon-btn {
-    background: transparent; color: #fff; border: none; width: 40px; height: 40px;
+    background: transparent; color: #fff; border: none; width: 38px; height: 38px;
     border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;
   }
   .icon-btn:active, .icon-btn:hover { background: var(--hover); }
-  .logo { display: flex; align-items: center; gap: 6px; font-size: 17px; font-weight: 800; cursor: pointer; white-space: nowrap; }
-  .logo-badge { background: var(--accent); color: #fff; border-radius: 6px; padding: 2px 7px; font-size: 13px; }
+  .logo { display: flex; align-items: center; gap: 6px; font-size: 16px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+  .logo-badge { background: var(--accent); color: #fff; border-radius: 6px; padding: 2px 6px; font-size: 12px; }
 
-  .search-box { flex: 1; max-width: 420px; background: #161616; border: 1px solid #333; border-radius: 20px; padding: 0 14px; display: flex; align-items: center; }
+  .search-box { flex: 1; max-width: 400px; background: #161616; border: 1px solid #333; border-radius: 20px; padding: 0 12px; display: flex; align-items: center; }
   .search-box:focus-within { border-color: var(--blue); }
-  .search-box input { width: 100%; height: 34px; background: transparent; border: none; color: #fff; font-size: 14px; outline: none; }
+  .search-box input { width: 100%; height: 32px; background: transparent; border: none; color: #fff; font-size: 13px; outline: none; }
 
   .pill-btn {
-    background: #272727; color: #fff; border: 1px solid transparent; padding: 8px 12px;
-    border-radius: 18px; font-size: 13px; font-weight: 600; cursor: pointer;
+    background: #272727; color: #fff; border: 1px solid transparent; padding: 7px 11px;
+    border-radius: 18px; font-size: 12px; font-weight: 600; cursor: pointer;
     white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;
   }
   .pill-btn:hover, .pill-btn:active { background: #383838; }
@@ -56,14 +57,19 @@
   .pill-btn.done { background: rgba(43,166,64,0.25); color: #65e87d; border-color: var(--green); }
   .pill-btn.danger { background: rgba(255,78,69,0.2); color: #ff807a; }
 
+  .sync-badge {
+    font-size: 11px; color: var(--blue); background: rgba(62,166,255,0.12);
+    padding: 4px 8px; border-radius: 12px; white-space: nowrap; display: none;
+  }
+
   /* Основная рабочая область */
   .app-body { display: flex; flex: 1; min-height: 0; overflow: hidden; position: relative; }
 
-  /* Боковая панель (поверх контента на планшете, чтобы не сжимать экран) */
-  .sidebar-backdrop { position: fixed; inset: 56px 0 0 0; background: rgba(0,0,0,0.6); z-index: 55; display: none; }
+  /* Боковая панель */
+  .sidebar-backdrop { position: fixed; inset: 54px 0 0 0; background: rgba(0,0,0,0.6); z-index: 55; display: none; }
   .sidebar-backdrop.open { display: block; }
   aside {
-    position: fixed; top: 56px; left: 0; bottom: 56px; width: 260px;
+    position: fixed; top: 54px; left: 0; bottom: 54px; width: 260px;
     background: #141414; border-right: 1px solid var(--border);
     overflow-y: auto; padding: 10px; z-index: 60;
     transform: translateX(-100%); transition: transform 0.2s ease;
@@ -81,89 +87,82 @@
   }
   .avatar img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
 
-  main { flex: 1; height: 100%; overflow-y: auto; padding: 14px 16px 90px 16px; -webkit-overflow-scrolling: touch; }
-
-  /* Стартовый экран */
-  .empty-screen {
-    max-width: 540px; margin: 50px auto; background: var(--sec); border: 1px solid var(--border);
-    border-radius: 18px; padding: 28px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 14px;
-  }
-  .empty-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
-  .big-btn { background: var(--blue); color: #000; border: none; padding: 13px 20px; border-radius: 22px; font-size: 14px; font-weight: 800; cursor: pointer; }
-  .big-btn.sec { background: #2c2c2c; color: #fff; }
+  main { flex: 1; height: 100%; overflow-y: auto; padding: 12px 14px 90px 14px; -webkit-overflow-scrolling: touch; }
 
   /* Полоса каналов */
   .ch-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 12px; border-bottom: 1px solid #222; scrollbar-width: none; }
   .ch-strip::-webkit-scrollbar { display: none; }
   .strip-chip {
     display: flex; align-items: center; gap: 7px; background: var(--sec);
-    padding: 5px 12px 5px 5px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    padding: 4px 11px 4px 4px; border-radius: 20px; font-size: 12px; font-weight: 600;
     white-space: nowrap; cursor: pointer; border: 1px solid transparent; flex-shrink: 0;
   }
   .strip-chip.active { background: #2c2c2c; border-color: var(--blue); color: #fff; }
-  .strip-chip .avatar { width: 26px; height: 26px; min-width: 26px; font-size: 12px; }
+  .strip-chip .avatar { width: 24px; height: 24px; min-width: 24px; font-size: 11px; }
 
-  .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
   .toolbar-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
+  .big-btn { background: var(--blue); color: #000; border: none; padding: 11px 18px; border-radius: 20px; font-size: 13px; font-weight: 800; cursor: pointer; }
+  .big-btn.sec { background: #2c2c2c; color: #fff; }
+
   /* Сетка карточек */
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px 14px; }
-  .card { display: flex; flex-direction: column; gap: 8px; cursor: pointer; background: var(--sec); border-radius: 14px; padding-bottom: 10px; overflow: hidden; border: 1px solid #222; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px 12px; }
+  .card { display: flex; flex-direction: column; gap: 8px; cursor: pointer; background: var(--sec); border-radius: 12px; padding-bottom: 10px; overflow: hidden; border: 1px solid #222; }
   .card:active { transform: scale(0.99); }
-  .card.watched .thumb-box img { opacity: 0.5; }
+  .card.watched .thumb-box img { opacity: 0.45; }
   .thumb-box { width: 100%; aspect-ratio: 16 / 9; background: #121212; position: relative; overflow: hidden; }
   .thumb-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .badge-date { position: absolute; bottom: 7px; right: 7px; background: rgba(0,0,0,0.86); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; }
-  .badge-watched { position: absolute; top: 7px; right: 7px; background: rgba(0,0,0,0.85); color: #65e87d; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+  .badge-date { position: absolute; bottom: 6px; right: 6px; background: rgba(0,0,0,0.86); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+  .badge-watched { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.85); color: #65e87d; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; }
   .prog-bg { position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.25); }
   .prog-fill { height: 100%; background: var(--accent); }
 
-  .card-info { display: flex; gap: 10px; align-items: flex-start; padding: 0 10px; }
+  .card-info { display: flex; gap: 9px; align-items: flex-start; padding: 0 9px; }
   .card-text { flex: 1; min-width: 0; }
-  .card-title { font-size: 14px; font-weight: 600; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .card-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
-  .del-btn { background: transparent; color: var(--muted); border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 15px; cursor: pointer; flex-shrink: 0; }
+  .card-title { font-size: 13px; font-weight: 600; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .del-btn { background: transparent; color: var(--muted); border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 14px; cursor: pointer; flex-shrink: 0; }
   .del-btn:hover { background: var(--hover); color: var(--danger); }
 
   /* =========================================================
-     ЭКРАН ПРОСМОТРА (АДАПТИВНЫЙ ДЛЯ ПЛАНШЕТА И ПК)
+     ЭКРАН ПРОСМОТРА
      ========================================================= */
   .watch-view {
-    display: none; grid-template-columns: minmax(0, 1fr) 330px; gap: 18px;
+    display: none; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px;
     max-width: 1440px; margin: 0 auto; padding-bottom: 60px; align-items: start;
   }
   .watch-view.active { display: grid; }
-  .watch-main { display: flex; flex-direction: column; gap: 12px; min-width: 0; width: 100%; }
-  .watch-side { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+  .watch-main { display: flex; flex-direction: column; gap: 10px; min-width: 0; width: 100%; }
+  .watch-side { display: flex; flex-direction: column; gap: 8px; width: 100%; }
 
-  /* Чистый и стабильный контейнер видеоплеера */
   .player-wrap {
-    width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 14px;
+    width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 12px;
     overflow: hidden; position: relative; border: 1px solid #262626;
   }
   video#mainPlayer, iframe#driveIframe { width: 100%; height: 100%; display: block; background: #000; border: none; }
 
   .resume-banner {
-    position: absolute; top: 12px; left: 12px; background: rgba(15,15,15,0.92);
-    border: 1px solid var(--blue); color: #fff; padding: 6px 12px; border-radius: 8px;
+    position: absolute; top: 10px; left: 10px; background: rgba(15,15,15,0.92);
+    border: 1px solid var(--blue); color: #fff; padding: 5px 10px; border-radius: 8px;
     font-size: 12px; z-index: 15; display: none; align-items: center; gap: 8px;
   }
-  .resume-banner button { background: var(--blue); color: #000; border: none; padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer; }
+  .resume-banner button { background: var(--blue); color: #000; border: none; padding: 3px 8px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer; }
 
   /* =========================================================
-     АККУРАТНЫЙ МИНИ-ПЛЕЕР В ПРАВОМ НИЖНЕМ УГЛУ
+     КОМПАКТНЫЙ МИНИ-ПЛЕЕР В ПРАВОМ НИЖНЕМ УГЛУ
      ========================================================= */
   .watch-view.mini {
     display: flex !important; flex-direction: column !important;
-    position: fixed !important; bottom: 66px !important; right: 14px !important;
-    width: 300px !important; max-width: calc(100vw - 28px) !important;
-    background: #1a1a1a !important; border: 1px solid #444 !important;
-    border-radius: 12px !important; box-shadow: 0 12px 34px rgba(0,0,0,0.92) !important;
+    position: fixed !important; bottom: 62px !important; right: 10px !important;
+    width: 210px !important;
+    background: #181818 !important; border: 1px solid #444 !important;
+    border-radius: 10px !important; box-shadow: 0 8px 26px rgba(0,0,0,0.9) !important;
     z-index: 90 !important; padding: 0 !important; margin: 0 !important; gap: 0 !important;
     overflow: hidden !important;
   }
   .watch-view.mini .watch-main { gap: 0 !important; }
-  .watch-view.mini .player-wrap { border-radius: 0 !important; border: none !important; }
+  .watch-view.mini .player-wrap { border-radius: 0 !important; border: none !important; cursor: pointer; }
   .watch-view.mini .w-title,
   .watch-view.mini .w-bar,
   .watch-view.mini .episodes-box,
@@ -174,67 +173,74 @@
 
   .mini-bar {
     display: none; align-items: center; justify-content: space-between;
-    padding: 8px 10px; background: #181818; border-top: 1px solid #2e2e2e; gap: 6px;
+    padding: 4px 6px; background: #161616; border-top: 1px solid #2c2c2c; gap: 4px;
   }
   .watch-view.mini .mini-bar { display: flex; }
   .mini-info { flex: 1; min-width: 0; cursor: pointer; }
-  .mini-title { font-size: 12px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .mini-ch { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mini-title { font-size: 11px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mini-btn {
-    background: #2c2c2c; color: #fff; border: none; width: 30px; height: 30px;
-    border-radius: 50%; font-size: 13px; font-weight: 700; cursor: pointer; flex-shrink: 0;
+    background: #2c2c2c; color: #fff; border: none; width: 24px; height: 24px;
+    border-radius: 50%; font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
   }
   .mini-btn.danger { background: rgba(255,78,69,0.25); color: #ff807a; }
 
   /* Инфо и кнопки под плеером */
-  .w-title { font-size: 17px; font-weight: 700; line-height: 1.35; }
-  .w-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .w-title { font-size: 16px; font-weight: 700; line-height: 1.35; }
+  .w-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
   .w-ch { display: flex; align-items: center; gap: 10px; cursor: pointer; }
   .w-controls { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 
-  .episodes-box { background: var(--sec); border: 1px solid var(--border); border-radius: 12px; padding: 10px; display: none; flex-direction: column; gap: 6px; max-height: 280px; overflow-y: auto; }
-  .ep-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: #242424; border-radius: 8px; cursor: pointer; font-size: 13px; gap: 10px; }
+  .episodes-box { background: var(--sec); border: 1px solid var(--border); border-radius: 12px; padding: 10px; display: none; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; }
+  .ep-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; background: #242424; border-radius: 8px; cursor: pointer; font-size: 12px; gap: 10px; }
   .ep-time { color: var(--blue); font-weight: 700; font-size: 12px; flex-shrink: 0; }
 
-  .desc-box { background: var(--sec); border-radius: 12px; padding: 12px; font-size: 13px; line-height: 1.48; color: #ddd; white-space: pre-wrap; word-break: break-word; max-height: 105px; overflow: hidden; cursor: pointer; }
+  .desc-box { background: var(--sec); border-radius: 12px; padding: 12px; font-size: 13px; line-height: 1.48; color: #ddd; white-space: pre-wrap; word-break: break-word; max-height: 95px; overflow: hidden; cursor: pointer; }
   .desc-box.expanded { max-height: none; }
   .tc-link { color: var(--blue); font-weight: 700; text-decoration: underline; cursor: pointer; }
 
   .comments-box { background: var(--sec); border: 1px solid var(--border); border-radius: 12px; padding: 12px; display: none; flex-direction: column; gap: 10px; }
-  .comments-list { display: flex; flex-direction: column; gap: 10px; max-height: 360px; overflow-y: auto; }
-  .comm-row { display: flex; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid #252525; font-size: 13px; }
+  .comments-list { display: flex; flex-direction: column; gap: 10px; max-height: 340px; overflow-y: auto; }
+  .comm-row { display: flex; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid #252525; font-size: 12px; }
 
   /* Боковые карточки рекомендаций */
-  .side-card { display: flex; gap: 10px; cursor: pointer; background: var(--sec); padding: 7px; border-radius: 12px; align-items: flex-start; border: 1px solid #222; }
+  .side-card { display: flex; gap: 10px; cursor: pointer; background: var(--sec); padding: 6px; border-radius: 10px; align-items: flex-start; border: 1px solid #222; }
   .side-card:hover { background: var(--hover); }
-  .side-card.watched .side-thumb img { opacity: 0.5; }
-  .side-thumb { width: 140px; min-width: 140px; aspect-ratio: 16 / 9; background: #121212; border-radius: 8px; position: relative; overflow: hidden; }
+  .side-card.watched .side-thumb img { opacity: 0.45; }
+  .side-thumb { width: 130px; min-width: 130px; aspect-ratio: 16 / 9; background: #121212; border-radius: 7px; position: relative; overflow: hidden; }
   .side-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .side-info { flex: 1; min-width: 0; }
-  .side-title { font-size: 13px; font-weight: 600; line-height: 1.32; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .side-title { font-size: 12px; font-weight: 600; line-height: 1.32; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .side-meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
 
-  /* Модальное окно настроек Облака */
+  /* Модальное окно Аккаунтов (Профилей) */
   .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 150; padding: 16px; }
   .modal-bg.open { display: flex; }
-  .modal-card { background: #1c1c1c; border: 1px solid #383838; border-radius: 16px; width: 100%; max-width: 460px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
-  .modal-card input { width: 100%; background: #111; border: 1px solid #3a3a3a; color: #fff; padding: 11px; border-radius: 8px; font-size: 14px; outline: none; }
-  .modal-card label { font-size: 12px; color: var(--muted); font-weight: 700; display: block; margin-bottom: 4px; }
+  .modal-card { background: #1c1c1c; border: 1px solid #383838; border-radius: 16px; width: 100%; max-width: 400px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+  .modal-card input { width: 100%; background: #111; border: 1px solid #3a3a3a; color: #fff; padding: 10px; border-radius: 8px; font-size: 14px; outline: none; }
+  .acc-list { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
+  .acc-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; background: #252525; border-radius: 10px; cursor: pointer; border: 1px solid transparent; }
+  .acc-row.active { border-color: var(--blue); background: #2c2c2c; }
+  .acc-name { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 
   /* Нижняя навигация */
-  .bottom-nav { height: 56px; background: #121212; border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; flex-shrink: 0; z-index: 80; }
+  .bottom-nav { height: 54px; background: #121212; border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; flex-shrink: 0; z-index: 80; }
   .b-tab { flex: 1; height: 100%; background: transparent; border: none; color: var(--muted); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 11px; font-weight: 700; cursor: pointer; }
   .b-tab.active { color: #fff; }
   .b-tab.active .b-ico { color: var(--blue); }
-  .b-ico { font-size: 18px; line-height: 1; }
+  .b-ico { font-size: 17px; line-height: 1; }
 
-  /* На планшетах и телефонах плеер во всю ширину без сжатия */
   @media (max-width: 1024px) {
     .watch-view.active { grid-template-columns: 1fr; }
   }
   @media (max-width: 700px) {
-    .grid { grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 12px 10px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px 10px; }
+    /* На телефоне мини-плеер совсем маленький (150px в углу), чтобы не закрывать экран */
+    .watch-view.mini {
+      width: 150px !important;
+      bottom: 60px !important;
+      right: 8px !important;
+    }
   }
 </style>
 </head>
@@ -251,32 +257,28 @@
     <input type="text" id="searchInput" placeholder="Поиск видео..." oninput="onSearch()">
   </div>
   <div class="h-right">
-    <button class="pill-btn blue" id="randomBtn" style="display:none;" onclick="playRandom()">🎲</button>
-    <button class="pill-btn" id="refreshCloudBtn" style="display:none;" onclick="syncFromGoogleDrive()" title="Обновить список">🔄</button>
-    <button class="pill-btn" onclick="clickCloudBtn()">☁️ Облако</button>
-    <button class="pill-btn" onclick="openCloudModal()" title="Настройки ссылки">⚙️</button>
-    <button class="pill-btn" onclick="document.getElementById('dirInput').click()" title="Открыть локальную папку">📁</button>
+    <span class="sync-badge" id="syncBadge">⏳ Обновление...</span>
+    <button class="pill-btn blue" id="randomBtn" onclick="playRandom()" title="Случайное видео">🎲</button>
+    <button class="pill-btn" onclick="syncFromGoogleDrive(true)" title="Проверить новые видео">🔄</button>
+    <button class="pill-btn" onclick="openAccountModal()" title="Сменить аккаунт">👤 <span id="curAccLabel">Влад</span></button>
   </div>
-  <input type="file" id="dirInput" webkitdirectory="" directory="" multiple="" style="display:none" onchange="handleFiles(this.files)">
-  <input type="file" id="localVideoInput" accept="video/*" style="display:none" onchange="playPickedLocalFile(this.files)">
 </header>
 
-<div class="modal-bg open" id="cloudModal">
+<!-- Модальное окно профилей (аккаунтов) -->
+<div class="modal-bg" id="accountModal">
   <div class="modal-card">
-    <h3>☁️ Подключение Google Диска</h3>
-    <div>
-      <label>1. Google Drive API Key</label>
-      <input type="text" id="inpApiKey" placeholder="AIzaSy...">
+    <h3>👤 Выбор аккаунта</h3>
+    <p style="font-size:12px; color:var(--muted); line-height:1.4;">
+      У каждого аккаунта своя история просмотра, прогресс и свой список удалённых видео.
+    </p>
+    <div class="acc-list" id="accList"></div>
+    <div style="display:flex; gap:8px;">
+      <input type="text" id="newAccInput" placeholder="Имя нового аккаунта...">
+      <button class="pill-btn blue" onclick="createNewAccount()">+ Создать</button>
     </div>
-    <div>
-      <label>2. Ссылка на папку VIDEO (доступ «Все, у кого есть ссылка»)</label>
-      <input type="text" id="inpFolderUrl" placeholder="https://drive.google.com/drive/folders/...">
-    </div>
-    <div id="cloudStatus" style="font-size: 13px; color: var(--blue); display: block; line-height: 1.4;">⏳ Сканирую каналы (30 из 160)...</div>
-    <button class="pill-btn" style="background:#2b4c32; color:#65e87d; justify-content:center; padding:10px;" onclick="bakePermanentHtml()">💾 Вшить ссылку в файл навсегда (Скачать HTML)</button>
-    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:4px;">
-      <button class="pill-btn" onclick="closeCloudModal()">Отмена</button>
-      <button class="pill-btn blue" onclick="saveAndConnectCloud()">Подключить и загрузить</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid #2e2e2e;">
+      <button class="pill-btn" onclick="restoreDeletedForAccount()" id="btnRestoreDeleted">↺ Вернуть скрытые (0)</button>
+      <button class="pill-btn" onclick="closeAccountModal()">Закрыть</button>
     </div>
   </div>
 </div>
@@ -289,25 +291,16 @@
   </aside>
 
   <main id="mainArea">
-    <div id="emptyState" class="empty-screen">
-      <h2>BUBATUBE</h2>
-      <p id="emptySubtext" style="color:var(--muted); max-width:420px; font-size:14px; line-height:1.5;">⏳ Сканирую каналы (30 из 160)...</p>
-      <div class="empty-btns">
-        <button class="big-btn" onclick="clickCloudBtn()">☁️ Подключить Google Диск</button>
-        <button class="big-btn sec" onclick="document.getElementById('dirInput').click()">📁 Локальная папка VIDEO</button>
-      </div>
-    </div>
-
-    <div id="gridView" style="display:none;">
+    <div id="gridView">
       <div class="ch-strip" id="channelStrip"></div>
       <div class="toolbar">
         <div>
-          <strong id="channelHeader" style="font-size:18px;">Все видео</strong>
-          <span id="countHeader" style="font-size:13px; color:var(--muted); margin-left:6px;"></span>
+          <strong id="channelHeader" style="font-size:17px;">Все видео</strong>
+          <span id="countHeader" style="font-size:12px; color:var(--muted); margin-left:6px;"></span>
         </div>
         <div class="toolbar-right">
           <button class="pill-btn" id="btnHideWatched" onclick="toggleHideWatched()">👁 Скрыть просмотренные</button>
-          <select id="sortSelect" onchange="resetAndRenderGrid()" style="background:#272727; color:#fff; border:none; padding:8px 12px; border-radius:14px; font-size:13px; outline:none;">
+          <select id="sortSelect" onchange="resetAndRenderGrid()" style="background:#272727; color:#fff; border:none; padding:7px 10px; border-radius:14px; font-size:12px; outline:none;">
             <option value="newest">Сначала новые</option>
             <option value="oldest">Сначала старые</option>
             <option value="title">По алфавиту</option>
@@ -323,23 +316,21 @@
     <!-- Экран просмотра -->
     <div id="watchView" class="watch-view">
       <div class="watch-main">
-        <div class="player-wrap" id="playerWrap">
+        <div class="player-wrap" id="playerWrap" onclick="onMiniVideoTap(event)">
           <div class="resume-banner" id="resumeBanner">
             <span id="resumeText">Продолжено</span>
-            <button onclick="restartVideo()">Сначала ↺</button>
+            <button onclick="event.stopPropagation(); restartVideo()">Сначала ↺</button>
           </div>
-          <!-- Нативный стабильный плеер с одинарной полосой прокрутки -->
-          <video id="mainPlayer" controls="" autoplay="" playsinline=""></video>
+          <video id="mainPlayer" controls autoplay playsinline></video>
           <iframe id="driveIframe" allow="autoplay; fullscreen" style="display:none;"></iframe>
         </div>
 
-        <!-- Плашка мини-плеера (появляется только когда свёрнуто в правый нижний угол) -->
+        <!-- Компактная плашка мини-плеера -->
         <div class="mini-bar">
           <div class="mini-info" onclick="restoreFullPlayer()">
             <div class="mini-title" id="miniTitle">Видео</div>
-            <div class="mini-ch" id="miniCh">Канал</div>
           </div>
-          <button class="mini-btn" onclick="toggleMainPlay()" title="Пауза/Пуск">⏯</button>
+          <button class="mini-btn" id="miniPlayBtn" onclick="toggleMainPlay()" title="Пауза/Пуск">⏯</button>
           <button class="mini-btn" onclick="restoreFullPlayer()" title="Развернуть">⤢</button>
           <button class="mini-btn danger" onclick="closePlayer()" title="Закрыть">✕</button>
         </div>
@@ -361,10 +352,10 @@
             <button class="pill-btn" onclick="setSpeed(1.5)" id="sp15">1.5x</button>
             <button class="pill-btn" onclick="setSpeed(2)" id="sp2">2x</button>
             <button class="pill-btn" id="btnEpisodes" style="display:none;" onclick="toggleEpisodesBox()">📑 Таймкоды</button>
+            <button class="pill-btn" onclick="togglePiP()" title="Картинка в картинке">📺 В окне</button>
             <button class="pill-btn" id="btnDownloadVideo" onclick="downloadCurrentVideo()">📥 Скачать</button>
-            <button class="pill-btn" onclick="document.getElementById('localVideoInput').click()" title="Открыть скачанный файл в плеере">📂 Открыть файл</button>
             <button class="pill-btn" id="btnWatched" onclick="toggleCurrentWatched()">✓ Просмотрено</button>
-            <button class="pill-btn" onclick="minimizeToHome()">🗗 В угол</button>
+            <button class="pill-btn" onclick="minimizeToHome()">🗗 Свернуть</button>
             <button class="pill-btn danger" onclick="deleteCurrentVideo()">🗑 Удалить</button>
           </div>
         </div>
@@ -407,16 +398,93 @@ const memStore = {};
 function safeGet(k, def) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch(e) { return memStore[k] || def; } }
 function safeSet(k, obj) { memStore[k] = obj; try { localStorage.setItem(k, JSON.stringify(obj)); } catch(e) {} }
 
-let progressMap = safeGet('localtube_progress_v1', {});
-let deletedMap = safeGet('localtube_deleted_v1', {});
-let durationMap = safeGet('localtube_durations_v1', {});
-let gdriveConfig = safeGet('localtube_gdrive_cfg', { apiKey: DEFAULT_API_KEY, folderId: DEFAULT_FOLDER_ID });
-if (!gdriveConfig.apiKey) gdriveConfig.apiKey = DEFAULT_API_KEY;
-if (!gdriveConfig.folderId && DEFAULT_FOLDER_ID) gdriveConfig.folderId = DEFAULT_FOLDER_ID;
+// =========================================================
+// СИСТЕМА АККАУНТОВ (ПРОФИЛЕЙ)
+// =========================================================
+const urlParams = new URLSearchParams(window.location.search);
+const urlUser = urlParams.get('user') || urlParams.get('acc');
+let accountsList = safeGet('bubatube_accounts_v1', ['Влад', 'Гость']);
+let currentAccount = urlUser || safeGet('bubatube_current_acc_v1', 'Влад');
+if (!accountsList.includes(currentAccount)) {
+  accountsList.push(currentAccount);
+  safeSet('bubatube_accounts_v1', accountsList);
+}
 
-let allVideos = [], channels = {}, channelAvatars = {};
+let progressMap = {};
+let deletedMap = {};
+let durationMap = safeGet('localtube_durations_v1', {});
+
+function loadAccountData() {
+  document.getElementById('curAccLabel').textContent = currentAccount;
+  // Для первого профиля сохраняем совместимость со старой историей
+  const progKey = currentAccount === 'Влад' ? 'localtube_progress_v1' : 'bubatube_prog_' + currentAccount;
+  const delKey = currentAccount === 'Влад' ? 'localtube_deleted_v1' : 'bubatube_del_' + currentAccount;
+  progressMap = safeGet(progKey, {});
+  deletedMap = safeGet(delKey, {});
+}
+function saveAccountProgress() {
+  const progKey = currentAccount === 'Влад' ? 'localtube_progress_v1' : 'bubatube_prog_' + currentAccount;
+  safeSet(progKey, progressMap);
+}
+function saveAccountDeleted() {
+  const delKey = currentAccount === 'Влад' ? 'localtube_deleted_v1' : 'bubatube_del_' + currentAccount;
+  safeSet(delKey, deletedMap);
+}
+loadAccountData();
+
+function openAccountModal() {
+  renderAccountsList();
+  document.getElementById('accountModal').classList.add('open');
+}
+function closeAccountModal() {
+  document.getElementById('accountModal').classList.remove('open');
+}
+function renderAccountsList() {
+  const box = document.getElementById('accList');
+  box.innerHTML = '';
+  accountsList.forEach(acc => {
+    const row = document.createElement('div');
+    row.className = 'acc-row' + (acc === currentAccount ? ' active' : '');
+    row.innerHTML = `<div class="acc-name"><span>👤</span><span>${acc}</span></div><span style="font-size:12px;color:var(--muted);">${acc === currentAccount ? 'Активен ✓' : 'Выбрать'}</span>`;
+    row.onclick = () => switchAccount(acc);
+    box.appendChild(row);
+  });
+  const delCnt = Object.keys(deletedMap).length;
+  document.getElementById('btnRestoreDeleted').textContent = `↺ Вернуть скрытые (${Math.ceil(delCnt / 2)})`;
+}
+function switchAccount(acc) {
+  currentAccount = acc;
+  safeSet('bubatube_current_acc_v1', currentAccount);
+  loadAccountData();
+  rebuildVisibleLibrary();
+  closeAccountModal();
+}
+function createNewAccount() {
+  const inp = document.getElementById('newAccInput');
+  const name = inp.value.trim();
+  if (!name) return;
+  if (!accountsList.includes(name)) {
+    accountsList.push(name);
+    safeSet('bubatube_accounts_v1', accountsList);
+  }
+  inp.value = '';
+  switchAccount(name);
+}
+function restoreDeletedForAccount() {
+  if (!confirm(`Восстановить все скрытые видео для аккаунта «${currentAccount}»?`)) return;
+  deletedMap = {};
+  saveAccountDeleted();
+  rebuildVisibleLibrary();
+  renderAccountsList();
+}
+
+// =========================================================
+// ДАННЫЕ КАТАЛОГА И МГНОВЕННЫЙ КЭШ
+// =========================================================
+let rawCatalogVideos = []; // Полный список видео с диска (без фильтра удаленных)
+let allVideos = [], channels = {}, channelAvatars = safeGet('bubatube_avatars_v2', {});
 let activeChannel = 'ALL', activeTab = 'home';
-let currentVideo = null, currentVideoUrl = null, currentChapters = [];
+let currentVideo = null, currentChapters = [];
 let filteredList = [], renderedCount = 0;
 const PAGE_SIZE = 48;
 let hideWatched = false, lastSaveTime = 0;
@@ -438,48 +506,9 @@ function closeSidebar() {
   document.getElementById('sidebarBackdrop').classList.remove('open');
 }
 
-function extractFolderId(input) {
-  const s = String(input || '').trim();
-  const m = s.match(/\/folders\/([a-zA-Z0-9_-]+)/) || s.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  return m ? m[1] : s.replace(/[^a-zA-Z0-9_-]/g, '');
-}
-
-function clickCloudBtn() {
-  if (gdriveConfig.apiKey && gdriveConfig.folderId) syncFromGoogleDrive();
-  else openCloudModal();
-}
-function openCloudModal() {
-  document.getElementById('inpApiKey').value = gdriveConfig.apiKey || DEFAULT_API_KEY;
-  document.getElementById('inpFolderUrl').value = gdriveConfig.folderId || DEFAULT_FOLDER_ID;
-  document.getElementById('cloudStatus').style.display = 'none';
-  document.getElementById('cloudModal').classList.add('open');
-}
-function closeCloudModal() { document.getElementById('cloudModal').classList.remove('open'); }
-
-async function saveAndConnectCloud() {
-  const key = document.getElementById('inpApiKey').value.trim();
-  const folderId = extractFolderId(document.getElementById('inpFolderUrl').value);
-  if (!key || !folderId) { alert('Укажи API Key и ссылку на папку VIDEO!'); return; }
-  gdriveConfig = { apiKey: key, folderId: folderId };
-  safeSet('localtube_gdrive_cfg', gdriveConfig);
-  await syncFromGoogleDrive();
-}
-
-function bakePermanentHtml() {
-  const key = document.getElementById('inpApiKey').value.trim() || DEFAULT_API_KEY;
-  const folderId = extractFolderId(document.getElementById('inpFolderUrl').value);
-  if (!folderId) { alert('Сначала вставь ссылку на папку VIDEO!'); return; }
-  gdriveConfig = { apiKey: key, folderId: folderId };
-  safeSet('localtube_gdrive_cfg', gdriveConfig);
-  let html = document.documentElement.outerHTML;
-  html = html.replace(/const DEFAULT_FOLDER_ID = ['"][^'"]*['"]/, `const DEFAULT_FOLDER_ID = '${folderId}'`);
-  html = html.replace(/const DEFAULT_API_KEY = ['"][^'"]*['"]/, `const DEFAULT_API_KEY = '${key}'`);
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['<!DOCTYPE html>\n' + html], { type: 'text/html;charset=utf-8' }));
-  a.download = 'BUBATUBE.html';
-  a.click();
-}
-
+// =========================================================
+// БЫСТРАЯ ПАРАЛЛЕЛЬНАЯ СИНХРОНИЗАЦИЯ С GOOGLE ДИСКОМ
+// =========================================================
 async function fetchDriveItems(query, apiKey) {
   let all = [], pageToken = '';
   do {
@@ -487,27 +516,23 @@ async function fetchDriveItems(query, apiKey) {
     const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=${encodeURIComponent(fields)}&pageSize=1000&supportsAllDrives=true&includeItemsFromAllDrives=true&key=${encodeURIComponent(apiKey)}${pageToken ? '&pageToken='+encodeURIComponent(pageToken) : ''}`;
     const res = await fetch(url);
     const data = await res.json();
-    if (!res.ok) throw new Error((data.error && data.error.message) || 'Ошибка доступа к Google Диску');
+    if (!res.ok) throw new Error((data.error && data.error.message) || 'Ошибка Google Диска');
     if (data.files) all = all.concat(data.files);
     pageToken = data.nextPageToken || '';
   } while (pageToken);
   return all;
 }
 
-async function syncFromGoogleDrive() {
-  if (!gdriveConfig.apiKey || !gdriveConfig.folderId) { openCloudModal(); return; }
-  const st = document.getElementById('cloudStatus');
-  const sub = document.getElementById('emptySubtext');
-  st.style.display = 'block';
-  st.textContent = '⏳ Подключаюсь к папке VIDEO...';
-  if (sub) sub.textContent = '⏳ Загружаю список каналов с Google Диска...';
+async function syncFromGoogleDrive(forceVisual) {
+  const badge = document.getElementById('syncBadge');
+  badge.style.display = 'inline-block';
+  badge.textContent = '⏳ Обновление...';
 
   try {
-    const apiKey = gdriveConfig.apiKey;
-    const rootItems = await fetchDriveItems(`'${gdriveConfig.folderId}' in parents and trashed = false`, apiKey);
+    const apiKey = DEFAULT_API_KEY;
+    const rootItems = await fetchDriveItems(`'${DEFAULT_FOLDER_ID}' in parents and trashed = false`, apiKey);
     if (rootItems.length === 0) {
-      st.textContent = '⚠️ Папка пуста или не открыт доступ «Все, у кого есть ссылка»!';
-      alert('Google Диск вернул 0 файлов. Проверь доступ к папке VIDEO!');
+      badge.style.display = 'none';
       return;
     }
 
@@ -516,160 +541,135 @@ async function syncFromGoogleDrive() {
     rootItems.forEach(item => {
       if (item.mimeType === 'application/vnd.google-apps.folder') {
         if (item.name.toLowerCase() !== 'shorts_cache') subFolders[item.id] = item.name;
-      } else allFiles.push(item);
+      } else {
+        allFiles.push(item);
+      }
     });
 
     const folderIds = Object.keys(subFolders);
-    const chunkSize = 15;
+    const chunkSize = 25;
+    const chunks = [];
     for (let i = 0; i < folderIds.length; i += chunkSize) {
-      const chunk = folderIds.slice(i, i + chunkSize);
-      const q = `(${chunk.map(id => `'${id}' in parents`).join(' or ')}) and trashed = false`;
-      const msg = `⏳ Сканирую каналы (${Math.min(i + chunkSize, folderIds.length)} из ${folderIds.length})...`;
-      st.textContent = msg;
-      if (sub) sub.textContent = msg;
-      try {
-        const subItems = await fetchDriveItems(q, apiKey);
-        allFiles = allFiles.concat(subItems);
-      } catch (subErr) {
-        for (const singleId of chunk) {
-          try {
-            const sItems = await fetchDriveItems(`'${singleId}' in parents and trashed = false`, apiKey);
-            allFiles = allFiles.concat(sItems);
-          } catch (e) {}
+      chunks.push(folderIds.slice(i, i + chunkSize));
+    }
+
+    // Запрашиваем только видео и картинки (без тяжелых .info.json и .description при старте)
+    // И сканируем в 5 параллельных потоков!
+    let completedChunks = 0;
+    const concurrency = 5;
+    for (let i = 0; i < chunks.length; i += concurrency) {
+      const batch = chunks.slice(i, i + concurrency);
+      const promises = batch.map(async (chunk) => {
+        const pQuery = `(${chunk.map(id => `'${id}' in parents`).join(' or ')}) and (mimeType contains 'video/' or mimeType contains 'image/') and trashed = false`;
+        try {
+          return await fetchDriveItems(pQuery, apiKey);
+        } catch (e) {
+          return [];
+        } finally {
+          completedChunks++;
+          const doneFolders = Math.min(completedChunks * chunkSize, folderIds.length);
+          badge.textContent = `⏳ ${doneFolders}/${folderIds.length}`;
         }
+      });
+
+      const results = await Promise.all(promises);
+      results.forEach(items => { allFiles = allFiles.concat(items); });
+
+      // Если кэша еще не было (первый запуск) — отрисовываем первые видео сразу, не дожидаясь конца
+      if (rawCatalogVideos.length === 0 && allFiles.length > 0) {
+        parseDriveFilesToCatalog(allFiles, subFolders, apiKey, false);
       }
     }
 
-    buildCloudLibrary(allFiles, subFolders, apiKey);
-    closeCloudModal();
-    document.getElementById('refreshCloudBtn').style.display = 'inline-flex';
+    parseDriveFilesToCatalog(allFiles, subFolders, apiKey, true);
+    badge.textContent = '✓ Обновлено';
+    setTimeout(() => { badge.style.display = 'none'; }, 2000);
   } catch (err) {
-    st.textContent = '❌ Ошибка: ' + err.message;
-    alert('Ошибка Google Диска: ' + err.message);
+    badge.textContent = '⚠️ Офлайн-кэш';
+    setTimeout(() => { badge.style.display = 'none'; }, 3000);
   }
 }
 
-function buildCloudLibrary(files, folderMap, apiKey) {
-  allVideos = []; channels = {}; channelAvatars = {};
-  const thumbMap = {}, infoMap = {}, fallbackThumbs = {};
+function parseDriveFilesToCatalog(files, folderMap, apiKey, saveCache) {
+  const thumbMap = {}, fallbackThumbs = {};
+  const newAvatars = {};
 
   files.forEach(f => {
     const name = f.name || '', lower = name.toLowerCase();
     if (lower.includes('[shorts]')) return;
     const pId = (f.parents && f.parents[0]) || '';
     const ch = folderMap[pId] || 'Видео';
-    if (ch.toLowerCase() === 'shorts_cache') return;
-    const relKey = `${ch}/${name.replace(/\.[^/.]+$/, "")}`;
-
-    if (lower.endsWith('.info.json')) {
-      infoMap[`${ch}/${name.slice(0, -10)}`] = `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${apiKey}`;
-      return;
-    }
     const ext = lower.split('.').pop();
     if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
+      const relKey = `${ch}/${name.replace(/\.[^/.]+$/, "")}`;
       const imgUrl = `https://drive.google.com/thumbnail?id=${f.id}&sz=w640`;
       thumbMap[relKey] = imgUrl;
-      if (lower.includes('avatar') || lower.includes('channel') || lower.startsWith('na - ')) channelAvatars[ch] = imgUrl;
+      if (lower.includes('avatar') || lower.includes('channel') || lower.startsWith('na - ')) newAvatars[ch] = imgUrl;
       else if (!fallbackThumbs[ch]) fallbackThumbs[ch] = imgUrl;
     }
   });
 
+  const parsedVideos = [];
   files.forEach(f => {
     const name = f.name || '', lower = name.toLowerCase(), ext = lower.split('.').pop();
     if (!['mp4', 'mkv', 'webm', 'mov'].includes(ext)) return;
     if (lower.includes('[shorts]')) return;
     const pId = (f.parents && f.parents[0]) || '';
     const ch = folderMap[pId] || 'Видео';
-    if (ch.toLowerCase() === 'shorts_cache') return;
     const pKey = `${ch}/${name}`;
-    if (deletedMap[pKey] || deletedMap[name]) return;
-
     const raw = name.replace(/\.[^/.]+$/, "");
-    const streamUrl = `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${apiKey}`;
 
     let dateStr = 'Без даты', sortDate = '00000000', title = raw;
     const m = raw.match(/^(\d{4})(\d{2})(\d{2})\s*-\s*(.+)$/);
     if (m) { sortDate = m[1]+m[2]+m[3]; dateStr = `${m[3]}.${m[2]}.${m[1]}`; title = m[4]; }
 
-    allVideos.push({
-      id: f.id, driveId: f.id, progressKey: pKey, fileName: name, streamUrl: streamUrl,
+    parsedVideos.push({
+      id: f.id,
+      driveId: f.id,
+      folderId: pId,
+      rawBaseName: raw,
+      progressKey: pKey,
+      fileName: name,
+      streamUrl: `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${apiKey}`,
       thumbUrl: thumbMap[`${ch}/${raw}`] || `https://drive.google.com/thumbnail?id=${f.id}&sz=w640`,
-      infoUrl: infoMap[`${ch}/${raw}`] || null,
-      title: title, channel: ch, dateFormatted: dateStr, sortDate: sortDate
+      title: title,
+      channel: ch,
+      dateFormatted: dateStr,
+      sortDate: sortDate
     });
-    channels[ch] = (channels[ch] || 0) + 1;
   });
 
-  Object.keys(channels).forEach(ch => { if (!channelAvatars[ch] && fallbackThumbs[ch]) channelAvatars[ch] = fallbackThumbs[ch]; });
-  finishLibraryLoad();
-}
-
-function handleFiles(fileList) {
-  if (!fileList || fileList.length === 0) return;
-  allVideos = []; channels = {}; channelAvatars = {};
-  const thumbMap = {}, infoMap = {}, fallbackThumbs = {};
-
-  for (let i = 0; i < fileList.length; i++) {
-    const f = fileList[i], name = f.name || '', lower = name.toLowerCase(), rel = f.webkitRelativePath || name;
-    if (rel.toLowerCase().includes('shorts_cache') || lower.includes('[shorts]')) continue;
-    if (lower.endsWith('.info.json')) { infoMap[rel.slice(0, -10)] = f; continue; }
-    const ext = lower.split('.').pop();
-    if (['jpg', 'jpeg', 'png', 'webp'].includes(ext) && f.size > 100) {
-      thumbMap[rel.replace(/\.[^/.]+$/, "")] = f;
-      const parts = rel.split('/');
-      if (parts.length >= 2) {
-        const ch = parts[parts.length - 2];
-        if (lower.includes('avatar') || lower.includes('channel') || lower.startsWith('na - ')) channelAvatars[ch] = f;
-        else if (!fallbackThumbs[ch]) fallbackThumbs[ch] = f;
-      }
-    }
-  }
-
-  for (let i = 0; i < fileList.length; i++) {
-    const f = fileList[i], name = f.name || '', lower = name.toLowerCase(), ext = lower.split('.').pop();
-    if (!['mp4', 'mkv', 'webm', 'mov'].includes(ext)) continue;
-    const rel = f.webkitRelativePath || name;
-    if (rel.toLowerCase().includes('shorts_cache') || lower.includes('[shorts]')) continue;
-    const parts = rel.split('/'), ch = parts.length >= 2 ? parts[parts.length - 2] : 'Видео';
-    const pKey = `${ch}/${name}`;
-    if (deletedMap[pKey] || deletedMap[name]) continue;
-
-    const base = rel.replace(/\.[^/.]+$/, ""), raw = name.replace(/\.[^/.]+$/, "");
-    let dateStr = 'Без даты', sortDate = '00000000', title = raw;
-    const m = raw.match(/^(\d{4})(\d{2})(\d{2})\s*-\s*(.+)$/);
-    if (m) { sortDate = m[1]+m[2]+m[3]; dateStr = `${m[3]}.${m[2]}.${m[1]}`; title = m[4]; }
-
-    allVideos.push({
-      id: rel, progressKey: pKey, fileName: name, file: f,
-      thumbFile: thumbMap[base] || null, thumbUrl: null, infoFile: infoMap[base] || null,
-      title: title, channel: ch, dateFormatted: dateStr, sortDate: sortDate
-    });
-    channels[ch] = (channels[ch] || 0) + 1;
-  }
-
-  Object.keys(channels).forEach(ch => {
-    const tf = channelAvatars[ch] || fallbackThumbs[ch];
-    if (tf && typeof tf !== 'string') channelAvatars[ch] = URL.createObjectURL(tf);
+  Object.keys(folderMap).forEach(fId => {
+    const ch = folderMap[fId];
+    if (!newAvatars[ch] && fallbackThumbs[ch]) newAvatars[ch] = fallbackThumbs[ch];
   });
-  finishLibraryLoad();
+
+  rawCatalogVideos = parsedVideos;
+  channelAvatars = Object.assign({}, channelAvatars, newAvatars);
+
+  if (saveCache && parsedVideos.length > 0) {
+    safeSet('bubatube_catalog_v2', rawCatalogVideos);
+    safeSet('bubatube_avatars_v2', channelAvatars);
+  }
+
+  rebuildVisibleLibrary();
 }
 
-function finishLibraryLoad() {
-  if (allVideos.length === 0) {
-    alert('Видеофайлы .mp4 не найдены!');
-    return;
-  }
-  document.getElementById('emptyState').style.display = 'none';
-  document.getElementById('gridView').style.display = 'block';
-  document.getElementById('randomBtn').style.display = 'inline-flex';
-  activeChannel = 'ALL';
+function rebuildVisibleLibrary() {
+  allVideos = [];
+  channels = {};
+  rawCatalogVideos.forEach(v => {
+    if (deletedMap[v.progressKey] || deletedMap[v.fileName]) return;
+    allVideos.push(v);
+    channels[v.channel] = (channels[v.channel] || 0) + 1;
+  });
   renderSidebar();
-  openTab('home');
+  resetAndRenderGrid();
 }
 
 function renderAvatar(ch) {
   const color = getColor(ch), letStr = getLetter(ch), url = typeof channelAvatars[ch] === 'string' ? channelAvatars[ch] : '';
-  return `<div class="avatar" style="background:${color}"><span>${letStr}</span>${url ? `<img src="${url}" onerror="this.remove()">` : ''}</div>`;
+  return `<div class="avatar" style="background:${color}"><span>${letStr}</span>${url ? `<img src="${url}" loading="lazy" onerror="this.remove()">` : ''}</div>`;
 }
 
 function renderSidebar() {
@@ -717,7 +717,8 @@ function openTab(tab) {
     const el = document.getElementById('nav'+t);
     if (el) el.classList.toggle('active', t.toLowerCase() === tab);
   });
-  if (allVideos.length > 0) { minimizeToHome(); resetAndRenderGrid(); }
+  minimizeToHome();
+  resetAndRenderGrid();
 }
 
 function onSearch() { minimizeToHome(); resetAndRenderGrid(); }
@@ -760,7 +761,6 @@ function loadMoreCards() {
   const grid = document.getElementById('videoGrid');
   const nextBatch = filteredList.slice(renderedCount, renderedCount + PAGE_SIZE);
   nextBatch.forEach(v => {
-    if (!v.thumbUrl && v.thumbFile) v.thumbUrl = URL.createObjectURL(v.thumbFile);
     const p = getProg(v);
     const dur = p.duration || durationMap[v.progressKey] || 0;
     const pct = p.watched ? 100 : (dur > 0 && p.time > 5 ? Math.min(99, Math.round((p.time / dur) * 100)) : 0);
@@ -780,7 +780,7 @@ function loadMoreCards() {
           <div class="card-title">${v.title}</div>
           <div class="card-meta">${v.channel} • ${v.dateFormatted}</div>
         </div>
-        <button class="del-btn" title="Удалить">🗑</button>
+        <button class="del-btn" title="Скрыть для аккаунта">🗑</button>
       </div>`;
     card.querySelector('.del-btn').onclick = (e) => { e.stopPropagation(); deleteVideo(v); };
     grid.appendChild(card);
@@ -790,34 +790,107 @@ function loadMoreCards() {
 }
 
 // =========================================================
-// СТАБИЛЬНЫЙ ПЛЕЕР И МИНИ-ПЛЕЕР В УГЛУ
+// ФОНОВОЕ ВОСПРОИЗВЕДЕНИЕ (MEDIA SESSION + ANTI-PAUSE ЗАЩИТА)
 // =========================================================
+let userPaused = false;
+let lastVisibilityChange = 0;
+let audioCtx = null;
+
+function ensureBackgroundAudioKeepAlive() {
+  try {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(() => {});
+    }
+  } catch (e) {}
+}
+
+function setupMediaSession(v) {
+  if (!('mediaSession' in navigator) || !v) return;
+  try {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: v.title || 'BUBATUBE',
+      artist: v.channel || 'Канал',
+      album: 'BUBATUBE',
+      artwork: v.thumbUrl ? [{ src: v.thumbUrl, sizes: '512x512', type: 'image/jpeg' }] : []
+    });
+    navigator.mediaSession.setActionHandler('play', () => {
+      userPaused = false;
+      document.getElementById('mainPlayer').play().catch(() => {});
+    });
+    navigator.mediaSession.setActionHandler('pause', () => {
+      userPaused = true;
+      document.getElementById('mainPlayer').pause();
+    });
+    navigator.mediaSession.setActionHandler('seekbackward', () => skip(-10));
+    navigator.mediaSession.setActionHandler('seekforward', () => skip(10));
+    navigator.mediaSession.setActionHandler('previoustrack', () => playAdjacentVideo(-1));
+    navigator.mediaSession.setActionHandler('nexttrack', () => playAdjacentVideo(1));
+  } catch (e) {}
+}
+
+// Когда телефон блокируется или браузер сворачивается — мобильная ОС пытается поставить video на паузу.
+// Если паузу нажал не пользователь, мгновенно продолжаем воспроизведение.
+document.addEventListener('visibilitychange', () => {
+  lastVisibilityChange = Date.now();
+  const p = document.getElementById('mainPlayer');
+  if (document.hidden && currentVideo && !userPaused) {
+    ensureBackgroundAudioKeepAlive();
+    setTimeout(() => {
+      if (p.paused && !userPaused && currentVideo) {
+        p.play().catch(() => {});
+      }
+    }, 120);
+  }
+});
+
+// =========================================================
+// ПЛЕЕР И УМНАЯ ДОЗАГРУЗКА ОПИСАНИЯ / КОММЕНТАРИЕВ ПО ЗАПРОСУ
+// =========================================================
+const infoCacheMap = {}; // Кэш загруженных .info.json
+
 async function playVideo(v) {
   closeSidebar();
   const watchView = document.getElementById('watchView'), player = document.getElementById('mainPlayer'), iframe = document.getElementById('driveIframe');
   if (currentVideo && currentVideo.id === v.id) { restoreFullPlayer(); return; }
 
   currentVideo = v;
+  userPaused = false;
   document.getElementById('gridView').style.display = 'none';
   watchView.classList.remove('mini');
   watchView.classList.add('active');
 
+  player.controls = true;
   iframe.style.display = 'none'; iframe.src = ''; player.style.display = 'block';
-  if (currentVideoUrl) { URL.revokeObjectURL(currentVideoUrl); currentVideoUrl = null; }
+  player.src = v.streamUrl;
 
-  if (v.file) {
-    currentVideoUrl = URL.createObjectURL(v.file);
-    player.src = currentVideoUrl;
-  } else if (v.streamUrl) {
-    player.src = v.streamUrl;
-    player.onerror = () => {
-      if (v.driveId) {
-        player.style.display = 'none';
-        iframe.style.display = 'block';
-        iframe.src = `https://drive.google.com/file/d/${v.driveId}/preview`;
-      }
-    };
-  }
+  player.onerror = () => {
+    if (v.driveId) {
+      player.style.display = 'none';
+      iframe.style.display = 'block';
+      iframe.src = `https://drive.google.com/file/d/${v.driveId}/preview`;
+    }
+  };
+
+  player.onplay = () => {
+    ensureBackgroundAudioKeepAlive();
+    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+  };
+
+  player.onpause = () => {
+    // Если браузер сам поставил на паузу в момент сворачивания или блокировки экрана — возвращаем Play
+    if ((document.hidden || Date.now() - lastVisibilityChange < 1500) && !player.ended && !userPaused) {
+      player.play().catch(() => {});
+      return;
+    }
+    if (!document.hidden && !player.ended) {
+      userPaused = true;
+    }
+    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+  };
 
   const p = getProg(v), resumeSec = (!p.watched && p.time > 5) ? p.time : 0;
   player.onloadedmetadata = () => {
@@ -825,14 +898,17 @@ async function playVideo(v) {
     if (dur > 0) {
       durationMap[v.progressKey] = dur; safeSet('localtube_durations_v1', durationMap);
       progressMap[v.progressKey] = { time: p.time || 0, duration: dur, watched: !!p.watched };
-      safeSet('localtube_progress_v1', progressMap);
+      saveAccountProgress();
     }
     if (resumeSec > 5 && (!dur || resumeSec < dur - 10)) {
       player.currentTime = resumeSec;
       document.getElementById('resumeText').textContent = `▶ С момента ${fmtTime(resumeSec)}`;
       document.getElementById('resumeBanner').style.display = 'flex';
       setTimeout(() => { document.getElementById('resumeBanner').style.display = 'none'; }, 5000);
-    } else document.getElementById('resumeBanner').style.display = 'none';
+    } else {
+      document.getElementById('resumeBanner').style.display = 'none';
+    }
+    userPaused = false;
     player.play().catch(() => {});
   };
 
@@ -843,154 +919,199 @@ async function playVideo(v) {
     if (cur < 3 || dur <= 0) return;
     const isDone = getProg(v).watched || (cur / dur >= 0.92);
     progressMap[v.progressKey] = { time: isDone ? 0 : cur, duration: dur, watched: isDone };
-    safeSet('localtube_progress_v1', progressMap);
+    saveAccountProgress();
     updateWatchedBtn();
   };
 
   player.onended = () => {
     progressMap[v.progressKey] = { time: 0, duration: Math.floor(player.duration || 0), watched: true };
-    safeSet('localtube_progress_v1', progressMap);
+    saveAccountProgress();
     updateWatchedBtn();
-    const idx = filteredList.findIndex(item => item.id === v.id);
-    for (let i = idx + 1; i < filteredList.length; i++) {
-      if (!getProg(filteredList[i]).watched) { playVideo(filteredList[i]); return; }
-    }
+    playAdjacentVideo(1);
   };
 
   document.getElementById('playerTitle').textContent = v.title;
   document.getElementById('miniTitle').textContent = v.title;
-  document.getElementById('miniCh').textContent = v.channel;
   document.getElementById('playerChName').textContent = v.channel;
   document.getElementById('playerDate').textContent = v.dateFormatted;
   document.getElementById('playerAvatar').outerHTML = renderAvatar(v.channel).replace('class="avatar"', 'class="avatar" id="playerAvatar"');
   document.getElementById('playerChBtn').onclick = () => selectChannel(v.channel);
 
+  setupMediaSession(v);
   updateWatchedBtn();
   setSpeed(1);
   renderUpNext();
   document.getElementById('mainArea').scrollTop = 0;
-  await loadInfoAndChapters(v);
+
+  // Подгружаем описание и комментарии в фоне по запросу
+  loadInfoAndChaptersLazy(v);
 }
 
-function downloadCurrentVideo() {
-  if (!currentVideo) return;
-  if (currentVideo.driveId) {
-    window.open(`https://drive.google.com/uc?export=download&id=${currentVideo.driveId}`, '_blank');
-  } else if (currentVideo.file) {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(currentVideo.file);
-    a.download = currentVideo.fileName || 'video.mp4';
-    a.click();
+function playAdjacentVideo(step) {
+  if (!currentVideo || !filteredList.length) return;
+  const idx = filteredList.findIndex(item => item.id === currentVideo.id);
+  if (idx === -1) return;
+  for (let i = idx + step; i >= 0 && i < filteredList.length; i += step) {
+    if (!getProg(filteredList[i]).watched) {
+      playVideo(filteredList[i]);
+      return;
+    }
   }
 }
 
-function playPickedLocalFile(files) {
-  if (!files || !files.length) return;
-  const f = files[0];
+async function togglePiP() {
   const p = document.getElementById('mainPlayer');
-  const curTime = p.currentTime || 0;
-  if (currentVideoUrl) URL.revokeObjectURL(currentVideoUrl);
-  currentVideoUrl = URL.createObjectURL(f);
-  document.getElementById('driveIframe').style.display = 'none';
-  p.style.display = 'block';
-  p.src = currentVideoUrl;
-  p.currentTime = curTime;
-  p.play().catch(() => {});
+  try {
+    if (document.pictureInPictureElement) await document.exitPictureInPicture();
+    else if (p.requestPictureInPicture) await p.requestPictureInPicture();
+  } catch (e) {}
+}
+
+function downloadCurrentVideo() {
+  if (!currentVideo || !currentVideo.driveId) return;
+  window.open(`https://drive.google.com/uc?export=download&id=${currentVideo.driveId}`, '_blank');
+}
+
+function onMiniVideoTap(e) {
+  const wv = document.getElementById('watchView');
+  if (wv.classList.contains('mini')) {
+    e.stopPropagation();
+    restoreFullPlayer();
+  }
 }
 
 function minimizeToHome() {
   const wv = document.getElementById('watchView');
-  if (currentVideo) wv.classList.add('active', 'mini');
-  else wv.classList.remove('active', 'mini');
-  if (allVideos.length > 0) document.getElementById('gridView').style.display = 'block';
+  const p = document.getElementById('mainPlayer');
+  if (currentVideo) {
+    p.controls = false; // Убираем громоздкие ползунки в миниатюре
+    wv.classList.add('active', 'mini');
+  } else {
+    wv.classList.remove('active', 'mini');
+  }
+  document.getElementById('gridView').style.display = 'block';
 }
+
 function restoreFullPlayer() {
   if (!currentVideo) return;
   const wv = document.getElementById('watchView');
-  wv.classList.remove('mini'); wv.classList.add('active');
+  const p = document.getElementById('mainPlayer');
+  p.controls = true;
+  wv.classList.remove('mini');
+  wv.classList.add('active');
   document.getElementById('gridView').style.display = 'none';
   document.getElementById('mainArea').scrollTop = 0;
 }
+
 function closePlayer() {
   const p = document.getElementById('mainPlayer');
+  userPaused = true;
   p.pause(); p.removeAttribute('src'); p.load();
   document.getElementById('driveIframe').src = '';
   currentVideo = null;
   document.getElementById('watchView').classList.remove('active', 'mini');
-  if (allVideos.length > 0) document.getElementById('gridView').style.display = 'block';
+  document.getElementById('gridView').style.display = 'block';
   resetAndRenderGrid();
 }
+
 function toggleMainPlay() {
   const p = document.getElementById('mainPlayer');
-  if (p.paused) p.play().catch(()=>{}); else p.pause();
+  if (p.paused) {
+    userPaused = false;
+    p.play().catch(()=>{});
+  } else {
+    userPaused = true;
+    p.pause();
+  }
 }
 
-async function loadInfoAndChapters(v) {
+// Ленивая подгрузка .info.json только для открытого видео
+async function loadInfoAndChaptersLazy(v) {
   const epBox = document.getElementById('episodesBox'), epBtn = document.getElementById('btnEpisodes'), descBox = document.getElementById('descBox');
   const commBox = document.getElementById('commentsBox'), commList = document.getElementById('commentsList'), commTitle = document.getElementById('commentsTitle');
   epBox.style.display = 'none'; epBox.innerHTML = ''; epBtn.style.display = 'none'; descBox.classList.remove('expanded');
   commBox.style.display = 'none'; commList.innerHTML = '';
   currentChapters = [];
-  let desc = '', comments = [];
+
+  descBox.textContent = `Канал: ${v.channel} • Дата: ${v.dateFormatted}`;
 
   try {
-    let txt = '';
-    if (v.infoFile) txt = await v.infoFile.text();
-    else if (v.infoUrl) { const r = await fetch(v.infoUrl); if (r.ok) txt = await r.text(); }
-    if (txt) {
-      const info = JSON.parse(txt);
-      if (info.duration > 0) { durationMap[v.progressKey] = Math.round(info.duration); safeSet('localtube_durations_v1', durationMap); }
-      if (typeof info.description === 'string') desc = info.description.trim();
-      if (Array.isArray(info.chapters)) currentChapters = info.chapters.map(c => ({ time: Math.floor(c.start_time || 0), title: c.title || 'Эпизод' }));
-      if (Array.isArray(info.comments)) comments = info.comments;
-    }
-  } catch(e) {}
-
-  if (!currentChapters.length && desc) {
-    desc.split(/\r?\n/).forEach(l => {
-      const m = l.match(/(\d{1,2}:\d{2}(?::\d{2})?)/);
-      if (m) {
-        const p = m[1].split(':').map(Number), sec = p.length === 3 ? p[0]*3600+p[1]*60+p[2] : p[0]*60+p[1];
-        const t = l.replace(m[0], '').replace(/^[\s\-—–:•.)(\[\]]+/, '').trim();
-        if (t) currentChapters.push({ time: sec, title: t });
+    let info = infoCacheMap[v.id];
+    if (!info && v.folderId && v.rawBaseName) {
+      const safeName = v.rawBaseName.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '.info.json';
+      const q = `'${v.folderId}' in parents and name = '${safeName}' and trashed = false`;
+      const files = await fetchDriveItems(q, DEFAULT_API_KEY);
+      if (files && files.length > 0) {
+        const infoUrl = `https://www.googleapis.com/drive/v3/files/${files[0].id}?alt=media&key=${DEFAULT_API_KEY}`;
+        const r = await fetch(infoUrl);
+        if (r.ok) {
+          info = await r.json();
+          infoCacheMap[v.id] = info;
+        }
       }
-    });
-  }
-  if (currentChapters.length > 0) {
-    epBtn.style.display = 'inline-flex'; epBtn.textContent = `📑 Таймкоды (${currentChapters.length})`;
-    currentChapters.forEach(ch => {
-      const row = document.createElement('div'); row.className = 'ep-row';
-      row.innerHTML = `<span>${ch.title}</span><span class="ep-time">${fmtTime(ch.time)}</span>`;
-      row.onclick = () => seekTo(ch.time); epBox.appendChild(row);
-    });
-  }
-  if (!desc) desc = `Канал: ${v.channel} • Дата: ${v.dateFormatted}\nФайл: ${v.fileName}`;
-  descBox.innerHTML = desc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\b(\d{1,2}:\d{2}(?::\d{2})?)\b/g, m => {
-    const p = m.split(':').map(Number), sec = p.length === 3 ? p[0]*3600+p[1]*60+p[2] : p[0]*60+p[1];
-    return `<span class="tc-link" onclick="event.stopPropagation(); seekTo(${sec})">${m}</span>`;
-  });
+    }
 
-  if (comments.length > 0) {
-    commBox.style.display = 'flex';
-    commTitle.textContent = `💬 Комментарии (${comments.length})`;
-    comments.slice(0, 80).forEach(c => {
-      const author = c.author || 'Зритель';
-      const row = document.createElement('div'); row.className = 'comm-row';
-      row.innerHTML = `${renderAvatar(author)}<div style="flex:1;min-width:0;"><div style="font-weight:700;color:#bbb;font-size:12px;">${author} ${c.like_count ? '• 👍 '+c.like_count : ''}</div><div style="margin-top:3px;white-space:pre-wrap;word-break:break-word;">${(c.text||'').replace(/</g,'&lt;')}</div></div>`;
-      commList.appendChild(row);
-    });
-  }
+    if (!currentVideo || currentVideo.id !== v.id || !info) return;
+
+    let desc = '', comments = [];
+    if (info.duration > 0) {
+      durationMap[v.progressKey] = Math.round(info.duration);
+      safeSet('localtube_durations_v1', durationMap);
+    }
+    if (typeof info.description === 'string') desc = info.description.trim();
+    if (Array.isArray(info.chapters)) currentChapters = info.chapters.map(c => ({ time: Math.floor(c.start_time || 0), title: c.title || 'Эпизод' }));
+    if (Array.isArray(info.comments)) comments = info.comments;
+
+    if (!currentChapters.length && desc) {
+      desc.split(/\r?\n/).forEach(l => {
+        const m = l.match(/(\d{1,2}:\d{2}(?::\d{2})?)/);
+        if (m) {
+          const p = m[1].split(':').map(Number), sec = p.length === 3 ? p[0]*3600+p[1]*60+p[2] : p[0]*60+p[1];
+          const t = l.replace(m[0], '').replace(/^[\s\-—–:•.)(\[\]]+/, '').trim();
+          if (t) currentChapters.push({ time: sec, title: t });
+        }
+      });
+    }
+
+    if (currentChapters.length > 0) {
+      epBtn.style.display = 'inline-flex';
+      epBtn.textContent = `📑 Таймкоды (${currentChapters.length})`;
+      currentChapters.forEach(ch => {
+        const row = document.createElement('div'); row.className = 'ep-row';
+        row.innerHTML = `<span>${ch.title}</span><span class="ep-time">${fmtTime(ch.time)}</span>`;
+        row.onclick = () => seekTo(ch.time);
+        epBox.appendChild(row);
+      });
+    }
+
+    if (desc) {
+      descBox.innerHTML = desc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\b(\d{1,2}:\d{2}(?::\d{2})?)\b/g, m => {
+        const p = m.split(':').map(Number), sec = p.length === 3 ? p[0]*3600+p[1]*60+p[2] : p[0]*60+p[1];
+        return `<span class="tc-link" onclick="event.stopPropagation(); seekTo(${sec})">${m}</span>`;
+      });
+    }
+
+    if (comments.length > 0) {
+      commBox.style.display = 'flex';
+      commTitle.textContent = `💬 Комментарии (${comments.length})`;
+      comments.slice(0, 80).forEach(c => {
+        const author = c.author || 'Зритель';
+        const row = document.createElement('div'); row.className = 'comm-row';
+        row.innerHTML = `${renderAvatar(author)}<div style="flex:1;min-width:0;"><div style="font-weight:700;color:#bbb;font-size:12px;">${author} ${c.like_count ? '• 👍 '+c.like_count : ''}</div><div style="margin-top:3px;white-space:pre-wrap;word-break:break-word;">${(c.text||'').replace(/</g,'&lt;')}</div></div>`;
+        commList.appendChild(row);
+      });
+    }
+  } catch (e) {}
 }
 
 function toggleEpisodesBox() { const b = document.getElementById('episodesBox'); b.style.display = b.style.display === 'flex' ? 'none' : 'flex'; }
-function seekTo(sec) { const p = document.getElementById('mainPlayer'); p.currentTime = sec; p.play().catch(()=>{}); }
+function seekTo(sec) { const p = document.getElementById('mainPlayer'); userPaused = false; p.currentTime = sec; p.play().catch(()=>{}); }
 
 function renderUpNext() {
   const box = document.getElementById('upNextGrid'); box.innerHTML = '';
   const pool = allVideos.filter(i => !currentVideo || i.id !== currentVideo.id).slice();
   shuffleArray(pool);
   pool.slice(0, 10).forEach(item => {
-    if (!item.thumbUrl && item.thumbFile) item.thumbUrl = URL.createObjectURL(item.thumbFile);
     const p = getProg(item), dur = p.duration || durationMap[item.progressKey] || 0;
     const d = document.createElement('div'); d.className = 'side-card' + (p.watched ? ' watched' : ''); d.onclick = () => playVideo(item);
     d.innerHTML = `<div class="side-thumb">${item.thumbUrl ? `<img src="${item.thumbUrl}" loading="lazy">` : ''}<span class="badge-date">${dur > 0 ? fmtTime(dur) : item.dateFormatted}</span></div><div class="side-info"><div class="side-title">${item.title}</div><div class="side-meta">${item.channel}</div><div class="side-meta">${item.dateFormatted}</div></div>`;
@@ -1008,15 +1129,17 @@ function toggleCurrentWatched() {
   if (!currentVideo) return;
   const p = getProg(currentVideo);
   progressMap[currentVideo.progressKey] = { time: 0, duration: p.duration || 0, watched: !p.watched };
-  safeSet('localtube_progress_v1', progressMap);
+  saveAccountProgress();
   updateWatchedBtn();
 }
 function deleteVideo(v) {
-  if (!confirm(`Скрыть и удалить из списка «${v.title}»?`)) return;
-  deletedMap[v.progressKey] = true; deletedMap[v.fileName] = true; safeSet('localtube_deleted_v1', deletedMap);
-  allVideos = allVideos.filter(i => i.id !== v.id);
-  if (channels[v.channel]) channels[v.channel] = Math.max(0, channels[v.channel] - 1);
-  if (currentVideo && currentVideo.id === v.id) closePlayer(); else { renderSidebar(); resetAndRenderGrid(); }
+  if (!confirm(`Скрыть «${v.title}» для аккаунта «${currentAccount}»?
+(На других аккаунтах и на Google Диске видео останется)`)) return;
+  deletedMap[v.progressKey] = true;
+  deletedMap[v.fileName] = true;
+  saveAccountDeleted();
+  if (currentVideo && currentVideo.id === v.id) closePlayer();
+  rebuildVisibleLibrary();
 }
 function deleteCurrentVideo() { if (currentVideo) deleteVideo(currentVideo); }
 function playRandom() {
@@ -1026,7 +1149,7 @@ function playRandom() {
   if (currentVideo && pool.length > 1) pool = pool.filter(v => v.id !== currentVideo.id);
   playVideo(pool[Math.floor(Math.random() * pool.length)]);
 }
-function restartVideo() { const p = document.getElementById('mainPlayer'); p.currentTime = 0; p.play().catch(()=>{}); document.getElementById('resumeBanner').style.display = 'none'; }
+function restartVideo() { const p = document.getElementById('mainPlayer'); userPaused = false; p.currentTime = 0; p.play().catch(()=>{}); document.getElementById('resumeBanner').style.display = 'none'; }
 function skip(s) { document.getElementById('mainPlayer').currentTime += s; }
 function setSpeed(r) {
   document.getElementById('mainPlayer').playbackRate = r;
@@ -1043,9 +1166,15 @@ window.addEventListener('keydown', e => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-  if (gdriveConfig.apiKey && gdriveConfig.folderId) syncFromGoogleDrive();
+  // 1. Мгновенно загружаем каталог из локального кэша (0.05 сек)
+  const cachedCatalog = safeGet('bubatube_catalog_v2', null);
+  if (cachedCatalog && Array.isArray(cachedCatalog) && cachedCatalog.length > 0) {
+    rawCatalogVideos = cachedCatalog;
+    rebuildVisibleLibrary();
+  }
+  // 2. В фоне тихо проверяем обновления с Google Диска
+  syncFromGoogleDrive(false);
 });
 </script>
-
-
-</body></html>
+</body>
+</html>
