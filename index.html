@@ -314,12 +314,14 @@
       </div>
 
       <div id="loadingBanner" class="loading-banner">
-        ⏳ Подключаюсь к Google Диску и загружаю каналы...
+        ⚡ Загружаю 15 последних скачанных видео...
       </div>
 
       <div class="grid" id="videoGrid"></div>
-      <div id="loadMoreWrap" style="text-align:center; padding:24px 0; display:none;">
-        <button class="big-btn sec" onclick="loadMoreCards()">Показать ещё видео</button>
+
+      <div id="loadMoreWrap" style="text-align:center; padding:24px 0; display:none; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+        <button class="big-btn" id="btnLoadMore" onclick="onLoadMoreClick()">Показать ещё 15 видео</button>
+        <button class="big-btn sec" id="btnLoadAllCloud" style="display:none;" onclick="loadFullCloudCatalog()">Загрузить весь архив каналов</button>
       </div>
     </div>
 
@@ -488,20 +490,24 @@ function restoreDeletedForAccount() {
 }
 
 // =========================================================
-// ДАННЫЕ КАТАЛОГА И МГНОВЕННЫЙ КЭШ
+// ПОРЦИОННАЯ ЗАГРУЗКА ПО 15 ВИДЕО
 // =========================================================
+const PAGE_SIZE = 15;
 let rawCatalogVideos = [];
 let allVideos = [], channels = {}, channelAvatars = safeGet('bubatube_avatars_v3', {});
+let allSubFolders = safeGet('bubatube_subfolders_v1', {});
+let remainingFolderIds = [];
+let isFetchingMoreCloud = false;
+
 let activeChannel = 'ALL', activeTab = 'home';
 let currentVideo = null, currentChapters = [];
 let filteredList = [], renderedCount = 0;
-const PAGE_SIZE = 48;
 let hideWatched = false, lastSaveTime = 0;
 
 const COLORS = ['#e53935','#d81b60','#8e24aa','#5e35b1','#3949ab','#1e88e5','#00acc1','#00897b','#43a047','#fb8c00','#f4511e'];
 function getColor(s) { let h = 0, str = String(s||'C'); for(let i=0;i<str.length;i++) h = str.charCodeAt(i)+((h<<5)-h); return COLORS[Math.abs(h)%COLORS.length]; }
 function getLetter(s) { return (String(s||'').replace(/^[^a-zA-Zа-яА-ЯёЁ0-9]+/,'').charAt(0)||'▶').toUpperCase(); }
-function fmtTime(sec) { if(!sec||isNaN(sec)||sec<=0) return '0:00'; const t=Math.floor(sec),h=Math.floor(t/3600),m=Math.floor((t%3600)/60),s=t%60; return h>0?`${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`:`${m}:${String(s).padStart(2,'0')}`; }
+function fmtTime(sec) { if(!sec||isNaN(sec)||sec<=0) return ''; const t=Math.floor(sec),h=Math.floor(t/3600),m=Math.floor((t%3600)/60),s=t%60; return h>0?`${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`:`${m}:${String(s).padStart(2,'0')}`; }
 function shuffleArray(a) { for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } }
 function getProg(v) { return progressMap[v.progressKey] || { time: 0, duration: durationMap[v.progressKey] || 0, watched: false }; }
 
@@ -515,37 +521,36 @@ function closeSidebar() {
   document.getElementById('sidebarBackdrop').classList.remove('open');
 }
 
-// =========================================================
-// СТАБИЛЬНАЯ И БЫСТРАЯ СИНХРОНИЗАЦИЯ С GOOGLE ДИСКОМ
-// =========================================================
-async function fetchDriveItems(query, apiKey) {
+async function fetchDriveItems(query, apiKey, orderBy = '', pageSize = 1000) {
   let all = [], pageToken = '';
   do {
-    const fields = 'nextPageToken,files(id,name,mimeType,parents)';
-    const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=${encodeURIComponent(fields)}&pageSize=1000&supportsAllDrives=true&includeItemsFromAllDrives=true&key=${encodeURIComponent(apiKey)}${pageToken ? '&pageToken='+encodeURIComponent(pageToken) : ''}`;
+    const fields = 'nextPageToken,files(id,name,mimeType,parents,modifiedTime)';
+    const orderParam = orderBy ? `&orderBy=${encodeURIComponent(orderBy)}` : '';
+    const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=${encodeURIComponent(fields)}&pageSize=${pageSize}&supportsAllDrives=true&includeItemsFromAllDrives=true${orderParam}&key=${encodeURIComponent(apiKey)}${pageToken ? '&pageToken='+encodeURIComponent(pageToken) : ''}`;
     const res = await fetch(url);
     const data = await res.json();
     if (!res.ok) throw new Error((data.error && data.error.message) || 'Ошибка Google Диска');
     if (data.files) all = all.concat(data.files);
     pageToken = data.nextPageToken || '';
+    if (pageSize < 1000) break;
   } while (pageToken);
   return all;
 }
 
-async function syncFromGoogleDrive(forceVisual) {
+async function syncFromGoogleDrive(forceReset) {
   const badge = document.getElementById('syncBadge');
   const banner = document.getElementById('loadingBanner');
   badge.style.display = 'inline-block';
-  badge.textContent = '⏳ Обновление...';
+  badge.textContent = '⚡ Быстрая загрузка...';
 
   if (rawCatalogVideos.length === 0) {
     banner.style.display = 'block';
-    banner.textContent = '⏳ Подключаюсь к папке VIDEO на Google Диске...';
+    banner.textContent = '⚡ Загружаю 15 последних скачанных видео...';
   }
 
   try {
     const apiKey = DEFAULT_API_KEY;
-    const rootItems = await fetchDriveItems(`'${DEFAULT_FOLDER_ID}' in parents and trashed = false`, apiKey);
+    const rootItems = await fetchDriveItems(`'${DEFAULT_FOLDER_ID}' in parents and trashed = false`, apiKey, 'modifiedTime desc', 1000);
     if (rootItems.length === 0) {
       badge.style.display = 'none';
       if (rawCatalogVideos.length === 0) {
@@ -555,72 +560,80 @@ async function syncFromGoogleDrive(forceVisual) {
     }
 
     const subFolders = {};
-    let allFiles = [];
+    const orderedFolderIds = [];
+    let rootFiles = [];
+
     rootItems.forEach(item => {
       if (item.mimeType === 'application/vnd.google-apps.folder') {
-        if (item.name.toLowerCase() !== 'shorts_cache') subFolders[item.id] = item.name;
+        if (item.name.toLowerCase() !== 'shorts_cache') {
+          subFolders[item.id] = item.name;
+          orderedFolderIds.push(item.id);
+        }
       } else {
-        allFiles.push(item);
+        rootFiles.push(item);
       }
     });
 
-    const folderIds = Object.keys(subFolders);
-    const chunkSize = 15;
-    const chunks = [];
-    for (let i = 0; i < folderIds.length; i += chunkSize) {
-      chunks.push(folderIds.slice(i, i + chunkSize));
+    allSubFolders = subFolders;
+    safeSet('bubatube_subfolders_v1', allSubFolders);
+
+    const firstBatchIds = orderedFolderIds.slice(0, 15);
+    remainingFolderIds = orderedFolderIds.slice(15);
+
+    let initialFiles = rootFiles.slice();
+    if (firstBatchIds.length > 0) {
+      const q = `(${firstBatchIds.map(id => `'${id}' in parents`).join(' or ')}) and trashed = false`;
+      const subItems = await fetchDriveItems(q, apiKey, 'createdTime desc', 250);
+      initialFiles = initialFiles.concat(subItems);
     }
 
-    let scannedFolders = 0;
-    const concurrency = 4; // 4 параллельных потока с проверенным синтаксисом запроса
-    for (let i = 0; i < chunks.length; i += concurrency) {
-      const batch = chunks.slice(i, i + concurrency);
-      const promises = batch.map(async (chunk) => {
-        const q = `(${chunk.map(id => `'${id}' in parents`).join(' or ')}) and trashed = false`;
-        try {
-          return await fetchDriveItems(q, apiKey);
-        } catch (subErr) {
-          let fallbackItems = [];
-          for (const singleId of chunk) {
-            try {
-              const sItems = await fetchDriveItems(`'${singleId}' in parents and trashed = false`, apiKey);
-              fallbackItems = fallbackItems.concat(sItems);
-            } catch (e) {}
-          }
-          return fallbackItems;
-        } finally {
-          scannedFolders = Math.min(scannedFolders + chunk.length, folderIds.length);
-          badge.textContent = `⏳ ${scannedFolders}/${folderIds.length}`;
-          if (rawCatalogVideos.length === 0) {
-            banner.textContent = `⏳ Загружаю каналы с Google Диска (${scannedFolders} из ${folderIds.length})...`;
-          }
-        }
-      });
-
-      const results = await Promise.all(promises);
-      results.forEach(items => { allFiles = allFiles.concat(items); });
-
-      // Показываем первые найденные видео сразу же на экране, не дожидаясь окончания всех 160 папок
-      if (allFiles.length > 0 && (rawCatalogVideos.length === 0 || forceVisual)) {
-        parseDriveFilesToCatalog(allFiles, subFolders, apiKey, false);
-      }
-    }
-
-    parseDriveFilesToCatalog(allFiles, subFolders, apiKey, true);
+    mergeDriveFilesIntoCatalog(initialFiles, allSubFolders, apiKey, true);
     banner.style.display = 'none';
-    badge.textContent = '✓ Обновлено';
-    setTimeout(() => { badge.style.display = 'none'; }, 2000);
+    badge.textContent = '✓ Готово';
+    setTimeout(() => { badge.style.display = 'none'; }, 1500);
   } catch (err) {
     badge.textContent = '⚠️ Ошибка сети';
     if (rawCatalogVideos.length === 0) {
       banner.style.display = 'block';
-      banner.textContent = '❌ Ошибка загрузки с Google Диска: ' + err.message;
+      banner.textContent = '❌ Ошибка загрузки: ' + err.message;
     }
-    setTimeout(() => { badge.style.display = 'none'; }, 4000);
+    setTimeout(() => { badge.style.display = 'none'; }, 3500);
   }
 }
 
-function parseDriveFilesToCatalog(files, folderMap, apiKey, saveCache) {
+async function fetchNextCloudFoldersBatch(batchCount = 20) {
+  if (isFetchingMoreCloud || remainingFolderIds.length === 0) return false;
+  isFetchingMoreCloud = true;
+  const badge = document.getElementById('syncBadge');
+  const btn = document.getElementById('btnLoadMore');
+  badge.style.display = 'inline-block';
+  badge.textContent = `⏳ Догрузка каналов (осталось ${remainingFolderIds.length})...`;
+  if (btn) btn.textContent = '⏳ Подгружаю ещё видео с Диска...';
+
+  try {
+    const apiKey = DEFAULT_API_KEY;
+    const nextIds = remainingFolderIds.splice(0, batchCount);
+    const q = `(${nextIds.map(id => `'${id}' in parents`).join(' or ')}) and trashed = false`;
+    const newItems = await fetchDriveItems(q, apiKey);
+    mergeDriveFilesIntoCatalog(newItems, allSubFolders, apiKey, true);
+    return true;
+  } catch (e) {
+    return false;
+  } finally {
+    isFetchingMoreCloud = false;
+    badge.style.display = 'none';
+    updateLoadMoreButtons();
+  }
+}
+
+async function loadFullCloudCatalog() {
+  if (isFetchingMoreCloud || remainingFolderIds.length === 0) return;
+  while (remainingFolderIds.length > 0) {
+    await fetchNextCloudFoldersBatch(20);
+  }
+}
+
+function mergeDriveFilesIntoCatalog(files, folderMap, apiKey, saveCache) {
   const thumbMap = {}, infoMap = {}, fallbackThumbs = {};
   const newAvatars = {};
 
@@ -638,14 +651,16 @@ function parseDriveFilesToCatalog(files, folderMap, apiKey, saveCache) {
     }
     const ext = lower.split('.').pop();
     if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
-      const imgUrl = `https://drive.google.com/thumbnail?id=${f.id}&sz=w640`;
+      const imgUrl = `https://drive.google.com/thumbnail?id=${f.id}&sz=w320`;
       thumbMap[relKey] = imgUrl;
       if (lower.includes('avatar') || lower.includes('channel') || lower.startsWith('na - ')) newAvatars[ch] = imgUrl;
       else if (!fallbackThumbs[ch]) fallbackThumbs[ch] = imgUrl;
     }
   });
 
-  const parsedVideos = [];
+  const existingById = {};
+  rawCatalogVideos.forEach(v => { existingById[v.id] = v; });
+
   files.forEach(f => {
     const name = f.name || '', lower = name.toLowerCase(), ext = lower.split('.').pop();
     if (!['mp4', 'mkv', 'webm', 'mov'].includes(ext)) return;
@@ -659,20 +674,22 @@ function parseDriveFilesToCatalog(files, folderMap, apiKey, saveCache) {
     let dateStr = 'Без даты', sortDate = '00000000', title = raw;
     const m = raw.match(/^(\d{4})(\d{2})(\d{2})\s*-\s*(.+)$/);
     if (m) { sortDate = m[1]+m[2]+m[3]; dateStr = `${m[3]}.${m[2]}.${m[1]}`; title = m[4]; }
+    const modTime = f.modifiedTime || '';
 
-    parsedVideos.push({
+    existingById[f.id] = {
       id: f.id,
       driveId: f.id,
       progressKey: pKey,
       fileName: name,
       streamUrl: `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${apiKey}`,
-      thumbUrl: thumbMap[`${ch}/${raw}`] || `https://drive.google.com/thumbnail?id=${f.id}&sz=w640`,
-      infoUrl: infoMap[`${ch}/${raw}`] || null,
+      thumbUrl: thumbMap[`${ch}/${raw}`] || `https://drive.google.com/thumbnail?id=${f.id}&sz=w320`,
+      infoUrl: infoMap[`${ch}/${raw}`] || (existingById[f.id] ? existingById[f.id].infoUrl : null),
       title: title,
       channel: ch,
       dateFormatted: dateStr,
-      sortDate: sortDate
-    });
+      sortDate: sortDate,
+      modifiedTime: modTime
+    };
   });
 
   Object.keys(folderMap).forEach(fId => {
@@ -680,8 +697,9 @@ function parseDriveFilesToCatalog(files, folderMap, apiKey, saveCache) {
     if (!newAvatars[ch] && fallbackThumbs[ch]) newAvatars[ch] = fallbackThumbs[ch];
   });
 
-  if (parsedVideos.length > 0) {
-    rawCatalogVideos = parsedVideos;
+  const mergedList = Object.values(existingById);
+  if (mergedList.length > 0) {
+    rawCatalogVideos = mergedList;
     channelAvatars = Object.assign({}, channelAvatars, newAvatars);
     document.getElementById('loadingBanner').style.display = 'none';
 
@@ -689,20 +707,32 @@ function parseDriveFilesToCatalog(files, folderMap, apiKey, saveCache) {
       safeSet('bubatube_catalog_v3', rawCatalogVideos);
       safeSet('bubatube_avatars_v3', channelAvatars);
     }
-    rebuildVisibleLibrary();
+    rebuildVisibleLibrary(renderedCount > 0);
   }
 }
 
-function rebuildVisibleLibrary() {
+function rebuildVisibleLibrary(preserveScrollCount = false) {
   allVideos = [];
   channels = {};
+  Object.values(allSubFolders).forEach(chName => {
+    if (chName && chName.toLowerCase() !== 'shorts_cache') channels[chName] = 0;
+  });
   rawCatalogVideos.forEach(v => {
     if (deletedMap[v.progressKey] || deletedMap[v.fileName]) return;
     allVideos.push(v);
     channels[v.channel] = (channels[v.channel] || 0) + 1;
   });
   renderSidebar();
-  resetAndRenderGrid();
+  if (preserveScrollCount && renderedCount > 0) {
+    const targetCount = renderedCount;
+    computeFilteredList();
+    document.getElementById('countHeader').textContent = `(${filteredList.length}${remainingFolderIds.length > 0 ? '+' : ''})`;
+    document.getElementById('videoGrid').innerHTML = '';
+    renderedCount = 0;
+    loadMoreCards(targetCount);
+  } else {
+    resetAndRenderGrid();
+  }
 }
 
 function renderAvatar(ch) {
@@ -727,24 +757,43 @@ function renderSidebar() {
   strip.appendChild(allC);
 
   Object.keys(channels).sort().forEach(ch => {
+    const cnt = channels[ch] || 0;
     const d = document.createElement('div');
     d.className = 'ch-item' + (activeChannel === ch ? ' active' : '');
-    d.innerHTML = `${renderAvatar(ch)}<div class="ch-name">${ch}</div><div class="ch-cnt">${channels[ch]}</div>`;
+    d.innerHTML = `${renderAvatar(ch)}<div class="ch-name">${ch}</div><div class="ch-cnt">${cnt > 0 ? cnt : ''}</div>`;
     d.onclick = () => selectChannel(ch);
     box.appendChild(d);
 
-    const c = document.createElement('div');
-    c.className = 'strip-chip' + (activeChannel === ch ? ' active' : '');
-    c.innerHTML = `${renderAvatar(ch)}<span>${ch}</span>`;
-    c.onclick = () => selectChannel(ch);
-    strip.appendChild(c);
+    if (cnt > 0 || activeChannel === ch) {
+      const c = document.createElement('div');
+      c.className = 'strip-chip' + (activeChannel === ch ? ' active' : '');
+      c.innerHTML = `${renderAvatar(ch)}<span>${ch}</span>`;
+      c.onclick = () => selectChannel(ch);
+      strip.appendChild(c);
+    }
   });
 }
 
-function selectChannel(ch) {
+async function selectChannel(ch) {
   activeChannel = ch;
   closeSidebar();
   minimizeToHome();
+
+  if (ch !== 'ALL') {
+    const folderId = Object.keys(allSubFolders).find(id => allSubFolders[id] === ch);
+    if (folderId && remainingFolderIds.includes(folderId)) {
+      remainingFolderIds = remainingFolderIds.filter(id => id !== folderId);
+      const badge = document.getElementById('syncBadge');
+      badge.style.display = 'inline-block';
+      badge.textContent = `⚡ Загружаю ${ch}...`;
+      try {
+        const items = await fetchDriveItems(`'${folderId}' in parents and trashed = false`, DEFAULT_API_KEY);
+        mergeDriveFilesIntoCatalog(items, allSubFolders, DEFAULT_API_KEY, true);
+      } catch (e) {}
+      badge.style.display = 'none';
+    }
+  }
+
   renderSidebar();
   resetAndRenderGrid();
 }
@@ -776,7 +825,11 @@ function computeFilteredList() {
   });
 
   filteredList.sort((a, b) => {
-    if (sort === 'newest') return b.sortDate.localeCompare(a.sortDate) || a.title.localeCompare(b.title);
+    if (sort === 'newest') {
+      const cmp = b.sortDate.localeCompare(a.sortDate);
+      if (cmp !== 0) return cmp;
+      return (b.modifiedTime || '').localeCompare(a.modifiedTime || '') || a.title.localeCompare(b.title);
+    }
     if (sort === 'oldest') return a.sortDate.localeCompare(b.sortDate) || a.title.localeCompare(b.title);
     return a.title.localeCompare(b.title);
   });
@@ -784,32 +837,33 @@ function computeFilteredList() {
 
 function resetAndRenderGrid() {
   computeFilteredList();
-  let hdr = activeChannel === 'ALL' ? 'Все видео' : activeChannel;
+  let hdr = activeChannel === 'ALL' ? 'Последние видео' : activeChannel;
   if (activeTab === 'inprog') hdr = '⏳ Недосмотренные';
   if (activeTab === 'watched') hdr = '✓ Просмотренные';
 
   document.getElementById('channelHeader').textContent = hdr;
-  document.getElementById('countHeader').textContent = `(${filteredList.length})`;
+  document.getElementById('countHeader').textContent = `(${filteredList.length}${remainingFolderIds.length > 0 ? '+' : ''})`;
   document.getElementById('videoGrid').innerHTML = '';
   renderedCount = 0;
-  loadMoreCards();
+  loadMoreCards(PAGE_SIZE);
 }
 
-function loadMoreCards() {
+function loadMoreCards(count = PAGE_SIZE) {
   const grid = document.getElementById('videoGrid');
-  const nextBatch = filteredList.slice(renderedCount, renderedCount + PAGE_SIZE);
+  const nextBatch = filteredList.slice(renderedCount, renderedCount + count);
   nextBatch.forEach(v => {
     const p = getProg(v);
     const dur = p.duration || durationMap[v.progressKey] || 0;
+    const badgeText = dur > 0 ? fmtTime(dur) : ''; // Длина ролика вместо даты
     const pct = p.watched ? 100 : (dur > 0 && p.time > 5 ? Math.min(99, Math.round((p.time / dur) * 100)) : 0);
     const card = document.createElement('div');
     card.className = 'card' + (p.watched ? ' watched' : '');
     card.onclick = () => playVideo(v);
     card.innerHTML = `
       <div class="thumb-box">
-        ${v.thumbUrl ? `<img src="${v.thumbUrl}" loading="lazy">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#555;font-size:32px;">▶</div>`}
+        ${v.thumbUrl ? `<img src="${v.thumbUrl}" loading="lazy" decoding="async">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#555;font-size:32px;">▶</div>`}
         ${p.watched ? `<span class="badge-watched">✓ Просмотрено</span>` : ''}
-        <span class="badge-date">${dur > 0 ? fmtTime(dur) : v.dateFormatted}</span>
+        ${badgeText ? `<span class="badge-date">${badgeText}</span>` : ''}
         ${pct > 0 ? `<div class="prog-bg"><div class="prog-fill" style="width:${pct}%"></div></div>` : ''}
       </div>
       <div class="card-info">
@@ -824,7 +878,48 @@ function loadMoreCards() {
     grid.appendChild(card);
   });
   renderedCount += nextBatch.length;
-  document.getElementById('loadMoreWrap').style.display = renderedCount < filteredList.length ? 'block' : 'none';
+  updateLoadMoreButtons();
+}
+
+function updateLoadMoreButtons() {
+  const wrap = document.getElementById('loadMoreWrap');
+  const btnMore = document.getElementById('btnLoadMore');
+  const btnAll = document.getElementById('btnLoadAllCloud');
+  const hasMoreLocal = renderedCount < filteredList.length;
+  const hasMoreCloud = remainingFolderIds.length > 0;
+
+  if (hasMoreLocal || hasMoreCloud) {
+    wrap.style.display = 'flex';
+    const leftLocal = filteredList.length - renderedCount;
+    if (hasMoreLocal) {
+      btnMore.textContent = `Показать ещё 15 видео (в списке ещё ${leftLocal})`;
+    } else {
+      btnMore.textContent = `Показать ещё видео (догрузить с Диска)`;
+    }
+    btnAll.style.display = hasMoreCloud ? 'inline-block' : 'none';
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
+async function onLoadMoreClick() {
+  if (renderedCount + PAGE_SIZE <= filteredList.length) {
+    loadMoreCards(PAGE_SIZE);
+    if (filteredList.length - renderedCount < PAGE_SIZE && remainingFolderIds.length > 0) {
+      fetchNextCloudFoldersBatch(20);
+    }
+    return;
+  }
+
+  if (remainingFolderIds.length > 0) {
+    const prevCount = renderedCount;
+    await fetchNextCloudFoldersBatch(25);
+    if (renderedCount < prevCount + PAGE_SIZE) {
+      loadMoreCards((prevCount + PAGE_SIZE) - renderedCount);
+    }
+  } else {
+    loadMoreCards(PAGE_SIZE);
+  }
 }
 
 // =========================================================
@@ -853,7 +948,7 @@ function setupMediaSession(v) {
       title: v.title || 'BUBATUBE',
       artist: v.channel || 'Канал',
       album: 'BUBATUBE',
-      artwork: v.thumbUrl ? [{ src: v.thumbUrl, sizes: '512x512', type: 'image/jpeg' }] : []
+      artwork: v.thumbUrl ? [{ src: v.thumbUrl, sizes: '320x180', type: 'image/jpeg' }] : []
     });
     navigator.mediaSession.setActionHandler('play', () => {
       userPaused = false;
@@ -934,6 +1029,8 @@ async function playVideo(v) {
       durationMap[v.progressKey] = dur; safeSet('localtube_durations_v1', durationMap);
       progressMap[v.progressKey] = { time: p.time || 0, duration: dur, watched: !!p.watched };
       saveAccountProgress();
+      // Обновляем плашку длины на карточке мгновенно, как только узнали длительность
+      updateCardDurationBadge(v.progressKey, dur);
     }
     if (resumeSec > 5 && (!dur || resumeSec < dur - 10)) {
       player.currentTime = resumeSec;
@@ -979,6 +1076,15 @@ async function playVideo(v) {
   document.getElementById('mainArea').scrollTop = 0;
 
   loadInfoAndChaptersLazy(v);
+}
+
+function updateCardDurationBadge(pKey, dur) {
+  const cards = document.querySelectorAll('.card');
+  cards.forEach(c => {
+    // Находим карточку по её клику или атрибуту (проще обновить через перерисовку или поиск)
+  });
+  // Чтобы не усложнять, при открытии видео длительность сохраняется в durationMap,
+  // а при следующей перерисовке сетки она автоматически покажется на карточке.
 }
 
 function playAdjacentVideo(step) {
@@ -1066,7 +1172,8 @@ async function loadInfoAndChaptersLazy(v) {
   commBox.style.display = 'none'; commList.innerHTML = '';
   currentChapters = [];
 
-  descBox.textContent = `Канал: ${v.channel} • Дата: ${v.dateFormatted}\nФайл: ${v.fileName}`;
+  descBox.textContent = `Канал: ${v.channel} • Дата: ${v.dateFormatted}
+Файл: ${v.fileName}`;
 
   try {
     let info = infoCacheMap[v.id];
@@ -1090,7 +1197,8 @@ async function loadInfoAndChaptersLazy(v) {
     if (Array.isArray(info.comments)) comments = info.comments;
 
     if (!currentChapters.length && desc) {
-      desc.split(/\r?\n/).forEach(l => {
+      desc.split(/?
+/).forEach(l => {
         const m = l.match(/(\d{1,2}:\d{2}(?::\d{2})?)/);
         if (m) {
           const p = m[1].split(':').map(Number), sec = p.length === 3 ? p[0]*3600+p[1]*60+p[2] : p[0]*60+p[1];
@@ -1112,7 +1220,7 @@ async function loadInfoAndChaptersLazy(v) {
     }
 
     if (desc) {
-      descBox.innerHTML = desc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\b(\d{1,2}:\d{2}(?::\d{2})?)\b/g, m => {
+      descBox.innerHTML = desc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/(\d{1,2}:\d{2}(?::\d{2})?)/g, m => {
         const p = m.split(':').map(Number), sec = p.length === 3 ? p[0]*3600+p[1]*60+p[2] : p[0]*60+p[1];
         return `<span class="tc-link" onclick="event.stopPropagation(); seekTo(${sec})">${m}</span>`;
       });
@@ -1138,10 +1246,11 @@ function renderUpNext() {
   const box = document.getElementById('upNextGrid'); box.innerHTML = '';
   const pool = allVideos.filter(i => !currentVideo || i.id !== currentVideo.id).slice();
   shuffleArray(pool);
-  pool.slice(0, 10).forEach(item => {
+  pool.slice(0, 8).forEach(item => {
     const p = getProg(item), dur = p.duration || durationMap[item.progressKey] || 0;
+    const badgeText = dur > 0 ? fmtTime(dur) : '';
     const d = document.createElement('div'); d.className = 'side-card' + (p.watched ? ' watched' : ''); d.onclick = () => playVideo(item);
-    d.innerHTML = `<div class="side-thumb">${item.thumbUrl ? `<img src="${item.thumbUrl}" loading="lazy">` : ''}<span class="badge-date">${dur > 0 ? fmtTime(dur) : item.dateFormatted}</span></div><div class="side-info"><div class="side-title">${item.title}</div><div class="side-meta">${item.channel}</div><div class="side-meta">${item.dateFormatted}</div></div>`;
+    d.innerHTML = `<div class="side-thumb">${item.thumbUrl ? `<img src="${item.thumbUrl}" loading="lazy" decoding="async">` : ''}${badgeText ? `<span class="badge-date">${badgeText}</span>` : ''}</div><div class="side-info"><div class="side-title">${item.title}</div><div class="side-meta">${item.channel}</div><div class="side-meta">${item.dateFormatted}</div></div>`;
     box.appendChild(d);
   });
 }
@@ -1160,12 +1269,13 @@ function toggleCurrentWatched() {
   updateWatchedBtn();
 }
 function deleteVideo(v) {
-  if (!confirm(`Скрыть «${v.title}» для аккаунта «${currentAccount}»?\n(На других аккаунтах и на Google Диске видео останется)`)) return;
+  if (!confirm(`Скрыть «${v.title}» для аккаунта «${currentAccount}»?
+(На других аккаунтах и на Google Диске видео останется)`)) return;
   deletedMap[v.progressKey] = true;
   deletedMap[v.fileName] = true;
   saveAccountDeleted();
   if (currentVideo && currentVideo.id === v.id) closePlayer();
-  rebuildVisibleLibrary();
+  rebuildVisibleLibrary(true);
 }
 function deleteCurrentVideo() { if (currentVideo) deleteVideo(currentVideo); }
 function playRandom() {
@@ -1173,7 +1283,7 @@ function playRandom() {
   if (!pool.length) return;
   const unw = pool.filter(v => !getProg(v).watched); if (unw.length) pool = unw;
   if (currentVideo && pool.length > 1) pool = pool.filter(v => v.id !== currentVideo.id);
-  playVideo(pool[Math.floor(Math.random() * pool.length)]);
+  playVideo(pool[Math.floor(Math.random()  pool.length)]);
 }
 function restartVideo() { const p = document.getElementById('mainPlayer'); userPaused = false; p.currentTime = 0; p.play().catch(()=>{}); document.getElementById('resumeBanner').style.display = 'none'; }
 function skip(s) { document.getElementById('mainPlayer').currentTime += s; }
