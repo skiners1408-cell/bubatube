@@ -37,7 +37,7 @@ jobs:
           [gdrive]
           type = drive
           scope = drive
-          root_folder_id = 1fKRyKChPKPM39COyorKMb82H2W0ENXr1
+          root_folder_id = 1rBiYAU3gJyX4cglZeYiWLl0NqgtD9qzC
           token = $GDRIVE_TOKEN
           EOF
 
