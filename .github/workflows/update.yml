@@ -1,0 +1,112 @@
+name: YouTube to Google Drive Auto-Updater
+
+on:
+  # Ручной запуск по кнопке в любой момент
+  workflow_dispatch:
+  # Автоматический запуск каждые 12 часов (в 06:00 и 18:00 UTC)
+  schedule:
+    - cron: '0 6,18 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  download-and-upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: 1. Загрузка файлов репозитория
+        uses: actions/checkout@v4
+
+      - name: 2. Установка yt-dlp, FFmpeg, Deno и Rclone
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ffmpeg rclone unzip
+          curl -fsSL https://deno.land/install.sh | sh
+          echo "$HOME/.deno/bin" >> $GITHUB_PATH
+          python3 -m pip install --upgrade pip yt-dlp
+
+      - name: 3. Настройка подключения к Google Диску и Cookies
+        env:
+          GDRIVE_TOKEN: ${{ secrets.GDRIVE_TOKEN }}
+          YT_COOKIES: ${{ secrets.YT_COOKIES }}
+        run: |
+          mkdir -p ~/.config/rclone
+          cat <<EOF > ~/.config/rclone/rclone.conf
+          [gdrive]
+          type = drive
+          scope = drive
+          root_folder_id = 1fKRyKChPKPM39COyorKMb82H2W0ENXr1
+          token = $GDRIVE_TOKEN
+          EOF
+
+          if [ -n "$YT_COOKIES" ]; then
+            echo "$YT_COOKIES" > cookies.txt
+          fi
+
+      - name: 4. Подготовка списка каналов (с конца списка)
+        run: |
+          touch channels.txt archive.txt
+          python3 -c "
+          import re
+          with open('channels.txt', 'r', encoding='utf-8', errors='ignore') as f:
+              lines = [l.strip() for l in f if l.strip()]
+          fixed = []
+          for u in lines:
+              u = re.sub(r'\?.*$', '', u).rstrip('/')
+              u = re.sub(r'/(videos|shorts|streams|live|featured)$', '', u)
+              if re.search(r'youtube\.com/(@[^/]+|channel/[^/]+|c/[^/]+|user/[^/]+)$', u):
+                  u += '/videos'
+              fixed.append(u)
+          fixed.reverse()
+          with open('channels_rev.txt', 'w', encoding='utf-8') as f:
+              f.write('\n'.join(fixed) + '\n')
+          "
+
+      - name: 5. Скачивание новых видео с YouTube
+        run: |
+          mkdir -p DOWNLOADS
+          COOKIE_ARG=""
+          if [ -s cookies.txt ]; then
+            COOKIE_ARG="--cookies cookies.txt"
+          fi
+
+          yt-dlp $COOKIE_ARG \
+            -a "channels_rev.txt" \
+            --playlist-end 2 \
+            --match-filter "!is_members_only & !is_live & !was_live" \
+            --no-write-playlist-metafiles \
+            --no-overwrites \
+            --geo-bypass \
+            --socket-timeout 30 \
+            --retries 5 \
+            -f "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best[height<=720]" \
+            --merge-output-format mp4 \
+            --write-thumbnail \
+            --convert-thumbnails jpg \
+            --write-info-json \
+            --write-comments \
+            --extractor-args "youtube:player_client=tv,mweb,default;comment_sort=top;max_comments=100,25,100" \
+            --sponsorblock-remove all \
+            --download-archive "archive.txt" \
+            --ignore-errors \
+            -o "DOWNLOADS/%(uploader)s/%(upload_date)s - %(title)s.%(ext)s" || true
+
+      - name: 6. Отгрузка скачанных видео напрямую на Google Диск
+        if: always()
+        run: |
+          if [ -d "DOWNLOADS" ] && [ "$(ls -A DOWNLOADS)" ]; then
+            echo "Отправляю новые видео на Google Диск..."
+            rclone copy DOWNLOADS gdrive: --transfers 4 --checkers 8 --stats 10s -v
+          else
+            echo "Новых видео нет, отгрузка не требуется."
+          fi
+
+      - name: 7. Сохранение обновлённого archive.txt на GitHub
+        if: always()
+        run: |
+          git config user.name "BUBATUBE Auto-Updater"
+          git config user.email "actions@github.com"
+          git add archive.txt
+          git diff --staged --quiet || (git commit -m "Auto-update archive.txt" && git pull --rebase && git push)
