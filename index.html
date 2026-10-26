@@ -402,7 +402,7 @@
 
 <script>
 const DEFAULT_API_KEY = 'AIzaSyDsZ23IUkkqE7aOJl9sjruwQzukbrbGmuQ';
-const DEFAULT_FOLDER_ID = '1fKRyKChPKPM39COyorKMb82H2W0ENXr1';
+const DEFAULT_FOLDER_ID = '1rBiYAU3gJyX4cglZeYiWLl0NqgtD9qzC';
 
 const memStore = {};
 function safeGet(k, def) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch(e) { return memStore[k] || def; } }
@@ -491,7 +491,7 @@ function restoreDeletedForAccount() {
 // ДАННЫЕ КАТАЛОГА И МГНОВЕННЫЙ КЭШ
 // =========================================================
 let rawCatalogVideos = [];
-let allVideos = [], channels = {}, channelAvatars = safeGet('bubatube_avatars_v3', {});
+let allVideos = [], channels = {}, channelAvatars = safeGet('bubatube_avatars_v4', {});
 let activeChannel = 'ALL', activeTab = 'home';
 let currentVideo = null, currentChapters = [];
 let filteredList = [], renderedCount = 0;
@@ -600,7 +600,7 @@ async function syncFromGoogleDrive(forceVisual) {
       const results = await Promise.all(promises);
       results.forEach(items => { allFiles = allFiles.concat(items); });
 
-      // Показываем первые найденные видео сразу же на экране, не дожидаясь окончания всех 160 папок
+      // Показываем первые найденные видео сразу же на экране, не дожидаясь окончания всех папок
       if (allFiles.length > 0 && (rawCatalogVideos.length === 0 || forceVisual)) {
         parseDriveFilesToCatalog(allFiles, subFolders, apiKey, false);
       }
@@ -686,8 +686,8 @@ function parseDriveFilesToCatalog(files, folderMap, apiKey, saveCache) {
     document.getElementById('loadingBanner').style.display = 'none';
 
     if (saveCache) {
-      safeSet('bubatube_catalog_v3', rawCatalogVideos);
-      safeSet('bubatube_avatars_v3', channelAvatars);
+      safeSet('bubatube_catalog_v4', rawCatalogVideos);
+      safeSet('bubatube_avatars_v4', channelAvatars);
     }
     rebuildVisibleLibrary();
   }
@@ -1192,7 +1192,7 @@ window.addEventListener('keydown', e => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-  const cachedCatalog = safeGet('bubatube_catalog_v3', null);
+  const cachedCatalog = safeGet('bubatube_catalog_v4', null);
   if (cachedCatalog && Array.isArray(cachedCatalog) && cachedCatalog.length > 0) {
     rawCatalogVideos = cachedCatalog;
     rebuildVisibleLibrary();
