@@ -1,9 +1,7 @@
 name: YouTube to Google Drive Auto-Updater
 
 on:
-  # Ручной запуск по кнопке в любой момент
   workflow_dispatch:
-  # Автоматический запуск каждые 12 часов (в 06:00 и 18:00 UTC)
   schedule:
     - cron: '0 6,18 * * *'
 
@@ -16,7 +14,7 @@ jobs:
     timeout-minutes: 120
 
     steps:
-      - name: 1. Загрузка файлов репозитория (без Node.js)
+      - name: 1. Загрузка файлов репозитория
         run: |
           git init .
           git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
@@ -29,13 +27,42 @@ jobs:
           sudo apt-get install -y ffmpeg rclone unzip
           curl -fsSL https://deno.land/install.sh | sh
           echo "$HOME/.deno/bin" >> $GITHUB_PATH
-          python3 -m pip install --upgrade pip yt-dlp
+          python3 -m pip install --upgrade pip "yt-dlp[default]"
 
-      - name: 3. Настройка подключения к Google Диску и Cookies
+      - name: 3. Диагностика настроек и подключение Google Диска
         env:
           GDRIVE_TOKEN: ${{ secrets.GDRIVE_TOKEN }}
           YT_COOKIES: ${{ secrets.YT_COOKIES }}
         run: |
+          if [ -f "channels.txt.txt" ]; then
+            mv "channels.txt.txt" "channels.txt"
+          fi
+          touch channels.txt archive.txt
+
+          CH_COUNT=$(grep -cve '^\s*$' channels.txt || true)
+          AR_COUNT=$(grep -cve '^\s*$' archive.txt || true)
+          echo "=========================================="
+          echo "Найдено каналов в channels.txt: $CH_COUNT"
+          echo "Записей в archive.txt: $AR_COUNT"
+          echo "=========================================="
+
+          if [ "$CH_COUNT" -eq 0 ]; then
+            echo "❌ ОШИБКА: Файл channels.txt пуст или не загружен в репозиторий!"
+            exit 1
+          fi
+
+          if [ -z "$GDRIVE_TOKEN" ]; then
+            echo "❌ ОШИБКА: Секрет GDRIVE_TOKEN не задан в Settings -> Secrets -> Actions!"
+            exit 1
+          fi
+
+          if [ -n "$YT_COOKIES" ]; then
+            echo "$YT_COOKIES" > cookies.txt
+            echo "✅ Куки YT_COOKIES успешно подключены."
+          else
+            echo "⚠️ ВНИМАНИЕ: Секрет YT_COOKIES пуст! YouTube может блокировать скачивание с серверов GitHub."
+          fi
+
           mkdir -p ~/.config/rclone
           cat <<EOF > ~/.config/rclone/rclone.conf
           [gdrive]
@@ -45,14 +72,9 @@ jobs:
           token = $GDRIVE_TOKEN
           EOF
 
-          if [ -n "$YT_COOKIES" ]; then
-            echo "$YT_COOKIES" > cookies.txt
-          fi
-
-      - name: 4. Подготовка списка каналов (с конца списка)
+      - name: 4. Подготовка списка каналов
         run: |
-          touch channels.txt archive.txt
-          python3 -c "
+          python3 - << 'EOF'
           import re
           with open('channels.txt', 'r', encoding='utf-8', errors='ignore') as f:
               lines = [l.strip() for l in f if l.strip()]
@@ -66,7 +88,8 @@ jobs:
           fixed.reverse()
           with open('channels_rev.txt', 'w', encoding='utf-8') as f:
               f.write('\n'.join(fixed) + '\n')
-          "
+          print(f"Подготовлено ссылок для скачивания: {len(fixed)}")
+          EOF
 
       - name: 5. Скачивание новых видео с YouTube
         run: |
@@ -91,20 +114,20 @@ jobs:
             --convert-thumbnails jpg \
             --write-info-json \
             --write-comments \
-            --extractor-args "youtube:player_client=tv,mweb,default;comment_sort=top;max_comments=100,25,100" \
+            --extractor-args "youtube:player_client=tv,mweb,web;comment_sort=top;max_comments=100,25,100" \
             --sponsorblock-remove all \
             --download-archive "archive.txt" \
             --ignore-errors \
             -o "DOWNLOADS/%(uploader)s/%(upload_date)s - %(title)s.%(ext)s" || true
 
-      - name: 6. Отгрузка скачанных видео напрямую на Google Диск
+      - name: 6. Отгрузка скачанных видео на Google Диск
         if: always()
         run: |
           if [ -d "DOWNLOADS" ] && [ "$(ls -A DOWNLOADS)" ]; then
-            echo "Отправляю новые видео на Google Диск..."
+            echo "📦 Найдены новые файлы! Отправляю на Google Диск..."
             rclone copy DOWNLOADS gdrive: --transfers 4 --checkers 8 --stats 10s -v
           else
-            echo "Новых видео нет, отгрузка не требуется."
+            echo "ℹ️ Папка DOWNLOADS пуста — новых видео не скачано (проверьте лог Шага 5 выше)."
           fi
 
       - name: 7. Сохранение обновлённого archive.txt на GitHub
