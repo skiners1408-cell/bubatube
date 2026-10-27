@@ -16,8 +16,12 @@ jobs:
     timeout-minutes: 120
 
     steps:
-      - name: 1. Загрузка файлов репозитория
-        uses: actions/checkout@v4
+      - name: 1. Загрузка файлов репозитория (без Node.js)
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          git fetch --depth=1 origin "${{ github.ref_name }}"
+          git checkout -B "${{ github.ref_name }}" FETCH_HEAD
 
       - name: 2. Установка yt-dlp, FFmpeg, Deno и Rclone
         run: |
@@ -109,4 +113,4 @@ jobs:
           git config user.name "BUBATUBE Auto-Updater"
           git config user.email "actions@github.com"
           git add archive.txt
-          git diff --staged --quiet || (git commit -m "Auto-update archive.txt" && git pull --rebase && git push)
+          git diff --staged --quiet || (git commit -m "Auto-update archive.txt" && git pull --rebase origin "${{ github.ref_name }}" && git push origin "${{ github.ref_name }}")
